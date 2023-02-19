@@ -1,19 +1,13 @@
 import { useEffect, useState } from "react";
-import {
-  Link as RouterLink,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // material-ui
 import {
   Box,
   Button,
-  Divider,
   FormControl,
   FormHelperText,
   Grid,
-  Link,
   IconButton,
   InputAdornment,
   InputLabel,
@@ -35,6 +29,9 @@ import {
 import useAuth from "../../../hooks/useAuth";
 import { postResetPwd } from "../../../utils/request";
 import { login } from "../../../store/reducers/actions";
+import { openSnackbar } from "../../../store/reducers/snackbar";
+import { useDispatch } from "../../../store";
+
 // assets
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 
@@ -70,6 +67,7 @@ const AuthResetPWD = () => {
 
   const [codeParams, setCodeParams] = useSearchParams();
   const code = codeParams.get("code");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [authState, authDispatch] = useAuth();
   return (
@@ -96,7 +94,19 @@ const AuthResetPWD = () => {
                   return (
                     setSubmitting(true),
                     setStatus({ success: true }),
-                    navigate("/")
+                    navigate("/"),
+                    dispatch(
+                      openSnackbar({
+                        open: true,
+                        message:
+                          "Your password has been changed, you are logged in!",
+                        variant: "alert",
+                        alert: {
+                          color: "success",
+                        },
+                        close: false,
+                      })
+                    )
                   );
                 } else {
                   return (

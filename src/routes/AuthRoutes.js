@@ -3,9 +3,13 @@ import { lazy } from "react";
 // project import
 import Loadable from "../components/Loadable";
 import MinimalLayout from "../layout/MinimalLayout";
-import { AuthRoutes } from "./PrivateRoute";
+import Register from "../pages/authentication/Register";
+import { AuthRoutes } from "./PrivateRouterWrapper";
 // render - login
 const Login = Loadable(lazy(() => import("../pages/authentication/Login")));
+const GoogleAuthCallback = Loadable(
+  lazy(() => import("../pages/authentication/auth-forms/GoogleAuthCallback"))
+);
 const ForgotPWD = Loadable(
   lazy(() => import("../pages/authentication/ForgotPWD"))
 );
@@ -26,6 +30,14 @@ const LoginRoutes = {
           <Login />
         </AuthRoutes>
       ),
+    },
+    {
+      path: "/register",
+      element: <Register />,
+    },
+    {
+      path: "/connect/google/redirect",
+      element: <GoogleAuthCallback />,
     },
     {
       path: "/forgotpwd",

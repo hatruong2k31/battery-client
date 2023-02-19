@@ -21,17 +21,17 @@ import { Formik } from "formik";
 // project import
 import MainCard from "../../../components/MainCard";
 import AnimateButton from "../../../components/@extended/AnimateButton";
-// import useAuth from "../../../hooks/useAuth";
-// import { logout } from "../../../store/reducers/actions";
 import { get, put } from "../../../utils/request";
 import { roleSelect, profileSelect } from "../../../utils/selectRequest";
-
+import { openSnackbar } from "../../../store/reducers/snackbar";
+import { useDispatch } from "../../../store";
 // assets
 
 // ==============================|| ADD NEW PRODUCT - MAIN ||============================== //
 
 const EditUser = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const handleCancel = () => {
     navigate(`/`);
   };
@@ -42,35 +42,10 @@ const EditUser = () => {
   const [user, setUser] = useState({});
 
   useEffect(() => {
-    roleSelect().then((response) => {
-      return setRoles(response.data);
-    });
-    profileSelect().then((response) => {
-      return setProfiles(response.data);
-    });
-  }, []);
-
-  useEffect(() => {
-    get(`/api/guser/detail/${id}`)
+    get(`/api/user/${id}`)
       .then((response) => {
         if (response.status === 200) {
-          return setUser((prev) => {
-            const userdata = {
-              ...prev,
-              email: response.data[0].email,
-              username: response.data[0].username,
-              name: response.data[0].username,
-              phone: response.data[0].phone,
-              id_card: response.data[0].id_card,
-              address: response.data[0].address,
-              profile_id: response.data[0].profile_id,
-              role_id: response.data[0].role_id,
-            };
-            return userdata;
-          });
-        }
-        if (response.status === 401) {
-          // return authDispatch(logout(null)), navigate("/login");
+          return setUser(response.data);
         }
       })
       .catch((error) => {
@@ -81,7 +56,7 @@ const EditUser = () => {
   return (
     <>
       <Formik
-        initialValues={user}
+        initialValues={{ ...user }}
         enableReinitialize
         validationSchema={Yup.object().shape({
           email: Yup.string()
@@ -92,28 +67,54 @@ const EditUser = () => {
             .min(1)
             .max(255)
             .required("Username is required"),
-          name: Yup.string().max(255).nullable(),
-          phone: Yup.string().max(11).nullable(),
-          id_card: Yup.string().max(12).nullable(),
+          phone: Yup.string()
+            .matches("^0[0-9]{9,10}$", "Please enter a valid Phone")
+            .min(10, "Please enter a valid Phone")
+            .max(11, "Please enter a valid Phone")
+            .nullable(),
+          identity_card: Yup.string()
+            .matches("^[0-9]*$", "Please enter a valid Identity Card")
+            .max(12, "No more than 20 characters")
+            .nullable(),
+          balance: Yup.number().nullable(),
           address: Yup.string().max(255).nullable(),
-          profile_id: Yup.number().nullable(),
-          role_id: Yup.number().nullable(),
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
-            put(`api/guser/detail/${id}`, values)
+            put(`api/user/${id}`, values)
               .then(function (response) {
                 if (response.status === 200) {
                   return (
                     setSubmitting(true),
                     setStatus({ success: true }),
+                    dispatch(
+                      openSnackbar({
+                        open: true,
+                        message: "Update success",
+                        variant: "alert",
+                        alert: {
+                          color: "success",
+                        },
+                        close: false,
+                      })
+                    ),
                     navigate(`/user/edit/${id}`)
                   );
                 } else {
                   return (
                     setSubmitting(false),
                     setStatus({ success: false }),
-                    setErrors({ submit: response.error.message })
+                    dispatch(
+                      openSnackbar({
+                        open: true,
+                        message: response?.error?.message,
+                        variant: "alert",
+                        alert: {
+                          color: "error",
+                        },
+                        close: false,
+                      })
+                    )
                   );
                 }
               })
@@ -209,28 +210,6 @@ const EditUser = () => {
                         )}
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>Name</InputLabel>
-                        <OutlinedInput
-                          id="name"
-                          type="text"
-                          value={values.name}
-                          name="name"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="Enter your name"
-                          fullWidth
-                          error={Boolean(touched.name && errors.name)}
-                        />
-                        {touched.name && errors.name && (
-                          <FormHelperText
-                            error
-                            id="standard-weight-helper-text-name"
-                          >
-                            {errors.name}
-                          </FormHelperText>
-                        )}
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
                         <InputLabel sx={{ mb: 1 }}>Phone</InputLabel>
                         <OutlinedInput
                           id="phone"
@@ -252,26 +231,71 @@ const EditUser = () => {
                           </FormHelperText>
                         )}
                       </Grid>
-
                       <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>ID Card</InputLabel>
+                        <InputLabel sx={{ mb: 1 }}>Identity</InputLabel>
                         <OutlinedInput
-                          id="id_card"
+                          id="identity_card"
                           type="text"
-                          value={values.id_card}
-                          name="id_card"
+                          value={values.identity_card}
+                          name="identity_card"
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          placeholder="Enter your ID card"
+                          placeholder="Enter your Identity"
                           fullWidth
-                          error={Boolean(touched.id_card && errors.id_card)}
+                          error={Boolean(
+                            touched.identity_card && errors.identity_card
+                          )}
                         />
-                        {touched.id_card && errors.id_card && (
+                        {touched.identity_card && errors.identity_card && (
                           <FormHelperText
                             error
-                            id="standard-weight-helper-text-id_card"
+                            id="standard-weight-helper-text-identity_card"
                           >
-                            {errors.id_card}
+                            {errors.identity_card}
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputLabel sx={{ mb: 1 }}>Card ID</InputLabel>
+                        <OutlinedInput
+                          id="card_id"
+                          type="text"
+                          value={values.card_id}
+                          name="card_id"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="Enter your Identity"
+                          fullWidth
+                          error={Boolean(touched.card_id && errors.card_id)}
+                        />
+                        {touched.card_id && errors.card_id && (
+                          <FormHelperText
+                            error
+                            id="standard-weight-helper-text-card_id"
+                          >
+                            {errors.card_id}
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputLabel sx={{ mb: 1 }}>Balance</InputLabel>
+                        <OutlinedInput
+                          id="balance"
+                          type="number"
+                          value={values.balance}
+                          name="balance"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="Enter your balance"
+                          fullWidth
+                          error={Boolean(touched.balance && errors.balance)}
+                        />
+                        {touched.balance && errors.balance && (
+                          <FormHelperText
+                            error
+                            id="standard-weight-helper-text-balance"
+                          >
+                            {errors.balance}
                           </FormHelperText>
                         )}
                       </Grid>
@@ -294,61 +318,6 @@ const EditUser = () => {
                             id="standard-weight-helper-text-address"
                           >
                             {errors.address}
-                          </FormHelperText>
-                        )}
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>Role</InputLabel>
-                        <TextField
-                          name="role_id"
-                          id="role_id"
-                          placeholder="Select Role"
-                          fullWidth
-                          select
-                          value={values.role_id || ""}
-                          variant="outlined"
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                        >
-                          {roles.map((option) => (
-                            <MenuItem key={option.id} value={option.id}>
-                              {option.name}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                        {touched.role_id && errors.role_id && (
-                          <FormHelperText
-                            error
-                            id="standard-weight-helper-text-role_id"
-                          >
-                            {errors.role_id}
-                          </FormHelperText>
-                        )}
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>Profile</InputLabel>
-                        <TextField
-                          name="profile_id"
-                          id="profile_id"
-                          placeholder="Select Profile"
-                          fullWidth
-                          select
-                          value={values.profile_id || ""}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                        >
-                          {profiles.map((option) => (
-                            <MenuItem key={option.id} value={option.id}>
-                              {option.name}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                        {touched.profile_id && errors.profile_id && (
-                          <FormHelperText
-                            error
-                            id="standard-weight-helper-text-profile_id"
-                          >
-                            {errors.profile_id}
                           </FormHelperText>
                         )}
                       </Grid>
@@ -381,7 +350,6 @@ const EditUser = () => {
                     <Button
                       sx={{ textTransform: "none" }}
                       disableElevation
-                      disabled={isSubmitting}
                       fullWidth
                       type="submit"
                       variant="contained"

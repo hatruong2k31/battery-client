@@ -1,9 +1,9 @@
 // material-ui
 import { useTheme } from "@mui/material/styles";
 import { useMediaQuery, Button, Stack } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-//
+//firebase
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { FIREBASE_API } from "../../../config";
@@ -12,6 +12,9 @@ import { FIREBASE_API } from "../../../config";
 import { postLoginGG } from "../../../utils/request";
 import useAuth from "../../../hooks/useAuth";
 import { login } from "../../../store/reducers/actions";
+import { openSnackbar } from "../../../store/reducers/snackbar";
+import { useDispatch } from "../../../store";
+
 // assets
 import Google from "../../../assets/images/icons/google.svg";
 
@@ -22,7 +25,7 @@ const FirebaseSocial = () => {
   const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
 
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const [authState, authDispatch] = useAuth();
 
   const provider = new GoogleAuthProvider();
@@ -33,13 +36,38 @@ const FirebaseSocial = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
         const idToken = result?._tokenResponse?.idToken;
-        const data = { token: idToken };
+        const data = { id_token: idToken };
         postLoginGG(data)
           .then((response) => {
             if (response.status === 200) {
-              return authDispatch(login(response)), navigate("/");
+              return (
+                authDispatch(login(response)),
+                navigate("/"),
+                dispatch(
+                  openSnackbar({
+                    open: true,
+                    message: "Logged in successfully",
+                    variant: "alert",
+                    alert: {
+                      color: "success",
+                    },
+                    close: false,
+                  })
+                )
+              );
             } else {
               navigate("/login");
+              dispatch(
+                openSnackbar({
+                  open: true,
+                  message: "Error!",
+                  variant: "alert",
+                  alert: {
+                    color: "error",
+                  },
+                  close: false,
+                })
+              );
             }
           })
           .catch((error) => {
@@ -51,7 +79,17 @@ const FirebaseSocial = () => {
         const errorMessage = error.message;
         const email = error.customData.email;
         const credential = GoogleAuthProvider.credentialFromError(error);
-
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: errorMessage,
+            variant: "alert",
+            alert: {
+              color: "error",
+            },
+            close: false,
+          })
+        );
         console.log({
           errorCode: errorCode,
           errorMessage: errorMessage,

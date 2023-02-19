@@ -27,6 +27,7 @@ const profileSelect = async () => {
     encodeValuesOnly: true,
   });
   const profileList = await get(`/api/profile/list?${query}`);
+  console.log(profileList);
   if (profileList.status === 200) {
     return { data: profileList.data.data };
   } else {
@@ -34,7 +35,74 @@ const profileSelect = async () => {
   }
 };
 
-const selectEmployees = async (req, res) => {
+const selectProvince = async () => {
+  let query = qs.stringify(
+    {
+      pagination: {
+        isPage: false,
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+  const _re = await get(`/api/local_province/list?${query}`);
+  if (_re.data) {
+    return { data: _re.data };
+  } else {
+    return { data: [] };
+  }
+};
+
+const selectDistrict = async (province_id) => {
+  let query = qs.stringify(
+    {
+      pagination: {
+        isPage: false,
+      },
+      filters: {
+        province_id: {
+          $eq: province_id,
+        },
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+  const _re = await get(`/api/local_district/list?${query}`);
+  if (_re.data) {
+    return { data: _re.data };
+  } else {
+    return { data: [] };
+  }
+};
+
+const selectWard = async (district_id) => {
+  let query = qs.stringify(
+    {
+      pagination: {
+        isPage: false,
+      },
+      filters: {
+        district_id: {
+          $eq: district_id,
+        },
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+  const _re = await get(`/api/local_ward/list?${query}`);
+  if (_re.data) {
+    return { data: _re.data };
+  } else {
+    return { data: [] };
+  }
+};
+
+const selectEmployees = async (res, req) => {
   let query = qs.stringify(
     {
       pagination: {
@@ -115,12 +183,9 @@ const selectIndustry = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -146,12 +211,9 @@ const selectLeadStatus = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -177,12 +239,9 @@ const selectLeadSource = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -208,12 +267,9 @@ const selectAccStatus = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -274,12 +330,9 @@ const selectOppStage = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -305,12 +358,9 @@ const selectOppType = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -336,12 +386,9 @@ const selectDecisionTimeframe = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
@@ -367,18 +414,18 @@ const selectProductInterest = async (req, res) => {
   );
   const _re = await get(`/api/md/list?${query}`);
   if (_re.status === 200) {
-    const result = {
-      list: _re.data.data,
-    };
-    res.send(JSON.stringify(result));
+    return { data: _re.data.data };
   } else {
-    res.send(JSON.stringify({ result: [] }));
+    return { data: [] };
   }
 };
 
 export {
   profileSelect,
   roleSelect,
+  selectProvince,
+  selectDistrict,
+  selectWard,
   selectAccStatus,
   selectAccount,
   selectDecisionTimeframe,

@@ -2,7 +2,7 @@ import axios from "axios";
 import { APITOKEN, SERVER } from "../config";
 
 const instance = axios.create({
-  baseURL: SERVER.host,
+  baseURL: SERVER.localhost,
 });
 
 export const postLogin = async (data) => {
@@ -21,9 +21,25 @@ export const postLogin = async (data) => {
   }
 };
 
+export const postRegister = async (data) => {
+  try {
+    const _re = await instance.post("/api/auth/local/register", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!_re.data) {
+      return { status: 400, error: _re.error };
+    }
+    return { status: 200, data: _re.data };
+  } catch (error) {
+    return { status: 400, error: error.response?.data?.error };
+  }
+};
+
 export const postFogotPwd = async (data) => {
   try {
-    const _re1 = await instance.post(`api/sys/check-email/`, data, {
+    const _re1 = await instance.post(`api/user/check-email/`, data, {
       headers: {
         Authorization: `Bearer ${APITOKEN.apiToken}`,
       },
@@ -65,16 +81,51 @@ export const postResetPwd = async (data) => {
 
 export const postLoginGG = async (data) => {
   try {
-    const _re = await instance.post("/api/firebase/auth", data, {
+    const _re = await instance.post("/api/auth/firebase", data, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-
     if (!_re.data) {
       return { status: 400, error: _re.data.error };
     }
 
+    return { status: 200, data: _re.data };
+  } catch (error) {
+    return { status: 400, error: error.response?.data?.error };
+  }
+};
+
+export const getSignInGG = async (access_token) => {
+  try {
+    const _re = await instance.get(
+      `/api/auth/google/callback?access_token=${access_token}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!_re.data) {
+      return { status: 400, error: _re.data.error };
+    }
+
+    return { status: 200, data: _re.data };
+  } catch (error) {
+    return { status: 400, error: error.response?.data?.error };
+  }
+};
+
+export const postVerifyToken = async (data) => {
+  try {
+    const _re = await instance.post("/api/auth/verifyToken", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (_re.error) {
+      return { status: 400, error: _re.error };
+    }
     return { status: 200, data: _re.data };
   } catch (error) {
     return { status: 400, error: error.response?.data?.error };
@@ -97,7 +148,7 @@ export const get = async (path) => {
       return { status: 200, data: _re.data };
     }
   } catch (error) {
-    if (error.response.data.error.status === 401) {
+    if (error.response.data?.error?.status === 401) {
       return { status: 401, message: error.response.data.error.message };
     } else {
       return {

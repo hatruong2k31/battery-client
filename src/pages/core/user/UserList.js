@@ -1,12 +1,11 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useMemo, Fragment, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { alpha, useTheme } from "@mui/material/styles";
-import { Delete, Edit } from '@mui/icons-material';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import axios from "../../../utils/axios";
-import { openSnackbar } from "../../../store/reducers/snackbar";
+
+// material-ui
+import { useTheme } from "@mui/material/styles";
+import { Delete, Edit } from "@mui/icons-material";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   useMediaQuery,
   Button,
@@ -18,25 +17,8 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  Modal,
-  Box,
 } from "@mui/material";
-// import View from "../task/View";
-import MainCard from "../../../components/MainCard";
-import ScrollX from "../../../components/ScrollX";
-import { renderFilterTypes, GlobalFilter } from "../../../utils/react-table";
-import {
-  HeaderSort,
-  TablePagination,
-  TableRowSelection,
-} from "../../../components/third-party/ReactTable";
-import { useDispatch, useSelector } from "../../../store";
 
-// assets
-import {
-  PlusOutlined,
-} from "@ant-design/icons";
-import { getTasks } from "../../../store/reducers/task";
 import {
   useFilters,
   useExpanded,
@@ -46,13 +28,34 @@ import {
   useTable,
   usePagination,
 } from "react-table";
+import Swal from "sweetalert2";
+
+// project import
+import ViewUser from "./ViewUser";
+import MainCard from "../../../components/MainCard";
+import ScrollX from "../../../components/ScrollX";
+import { renderFilterTypes, GlobalFilter } from "../../../utils/react-table";
+import {
+  HeaderSort,
+  TablePagination,
+  TableRowSelection,
+  SortingSelect,
+} from "../../../components/third-party/ReactTable";
+import { useDispatch, useSelector } from "../../../store";
+import { getUsers } from "../../../store/reducers/user";
+import { openSnackbar } from "../../../store/reducers/snackbar";
+import { del, get } from "../../../utils/request";
+
+// assets
+import { PlusOutlined } from "@ant-design/icons";
+
+// ==============================|| REACT TABLE ||============================== //
 
 function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
 
   const filterTypes = useMemo(() => renderFilterTypes, []);
-  const sortBy = { id: "username", desc: false };
+  const sortBy = { id: "id", desc: false };
 
   const {
     getTableProps,
@@ -60,32 +63,25 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
     headerGroups,
     prepareRow,
     setHiddenColumns,
+    allColumns,
     visibleColumns,
     rows,
-    // @ts-ignore
     page,
-    // @ts-ignore
     gotoPage,
-    // @ts-ignore
     setPageSize,
-    // @ts-ignore
     state: { globalFilter, selectedRowIds, pageIndex, pageSize },
-    // @ts-ignore
     preGlobalFilteredRows,
-    // @ts-ignore
     setGlobalFilter,
-    // @ts-ignore
+    setSortBy,
   } = useTable(
     {
       columns,
       data,
-      // @ts-ignore
       filterTypes,
-      // @ts-ignore
       initialState: {
         pageIndex: 0,
         pageSize: 5,
-        hiddenColumns: ["image", "description"],
+        hiddenColumns: [],
         sortBy: [sortBy],
       },
     },
@@ -96,21 +92,11 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
     usePagination,
     useRowSelect
   );
-
-  useEffect(() => {
-    if (matchDownSM) {
-      setHiddenColumns(["id", "name", "email", "description", "phone"]);
-    } else {
-      setHiddenColumns(["image", "description"]);
-    }
-    // eslint-disable-next-line
-  }, [matchDownSM]);
-
   const history = useNavigate();
-  const handleAddtask = () => {
-    history(`/task/add`);
-  };
 
+  const handleAddUser = () => {
+    history(`/user/create`);
+  };
 
   return (
     <>
@@ -128,18 +114,18 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
             setGlobalFilter={setGlobalFilter}
             size="small"
           />
+          <SortingSelect
+            sortBy={sortBy.id}
+            setSortBy={setSortBy}
+            allColumns={allColumns}
+          />
           <Stack direction="row" alignItems="center" spacing={1}>
-            {/* <SortingSelect
-              sortBy={sortBy.id}
-              setSortBy={setSortBy}
-              allColumns={allColumns}
-            /> */}
             <Button
               variant="contained"
               startIcon={<PlusOutlined />}
-              onClick={handleAddtask}
+              onClick={handleAddUser}
             >
-              Add task
+              Add User
             </Button>
           </Stack>
         </Stack>
@@ -174,15 +160,10 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
               return (
                 <Fragment key={i}>
                   <TableRow
+                    hover
                     {...row.getRowProps()}
                     onClick={() => {
-                      row.toggleRowSelected();
-                    }}
-                    sx={{
-                      cursor: "pointer",
-                      bgcolor: row.isSelected
-                        ? alpha(theme.palette.primary.lighter, 0.35)
-                        : "inherit",
+                      history(`/user/view/${row.values.id}`);
                     }}
                   >
                     {row.cells.map((cell, index) => (
@@ -201,6 +182,21 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
                 </Fragment>
               );
             })}
+            {page.length === 0 && (
+              <Fragment>
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <Typography
+                      component="span"
+                      sx={{ color: `error.main` }}
+                      justifyContent="center"
+                    >
+                      No Users!
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              </Fragment>
+            )}
             <TableRow sx={{ "&:hover": { bgcolor: "transparent !important" } }}>
               <TableCell sx={{ p: 2, py: 3 }} colSpan={9}>
                 <TablePagination
@@ -226,38 +222,29 @@ ReactTable.propTypes = {
   renderRowSubComponent: PropTypes.any,
 };
 
-const Probabi = ({row}) => {
-  const { values } = row;
-  return (
-    <span> {values.probability} </span>
-  );
+// ==============================|| PRODUCT LIST - MAIN ||============================== //
 
-}
 const CellActions = ({ row }) => {
   const dispatch = useDispatch();
   const { values } = row;
-  const { tasks } = useSelector((state) => state.task);
-  
-  const handleDeleteTask = useCallback(
-    async (row) => {
-      if (!window.confirm(`Are you sure you want to delete ${row.subject}`)) {
-        return;
-      }
 
-      try {
-        const token = JSON.parse(localStorage.getItem("token"));
-        const header = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-
-        await axios.delete(`/api/task/${values.id}`, header).then(
-          () => {
+  const deleteSwal = (name) =>
+    Swal.fire({
+      title: "Are you sure?",
+      text: `Are you sure you want to delete ${name}`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        del(`/api/user/${values.id}`).then((response) => {
+          if (response.status === 200) {
             dispatch(
               openSnackbar({
                 open: true,
-                message: "Submit Success",
+                message: `${values.name} deleted successfully!`,
                 variant: "alert",
                 alert: {
                   color: "success",
@@ -265,14 +252,12 @@ const CellActions = ({ row }) => {
                 close: false,
               })
             );
-            dispatch(getTasks());
-          },
-          (err) => {
-            console.log(err);
+            dispatch(getUsers());
+          } else {
             dispatch(
               openSnackbar({
                 open: true,
-                message: err.error.details || err.error.message || err.message,
+                message: `${values.name} deleted Error! ${response?.message}`,
                 variant: "alert",
                 alert: {
                   color: "error",
@@ -281,63 +266,35 @@ const CellActions = ({ row }) => {
               })
             );
           }
-        );
-      } catch (err) {
-        dispatch(
-          openSnackbar({
-            open: true,
-            message: err.message,
-            variant: "alert",
-            alert: {
-              color: "error",
-            },
-            close: false,
-          })
-        );
+        });
       }
-    },
-  );
+    });
 
   return (
     <Stack
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
       direction="row"
       alignItems="left"
       justifyContent="left"
-      spacing={0}
+      spacing={2}
     >
       <Tooltip title="View">
-        <Link to={{ pathname: `/task/view/${values.id}` }} className="btn btn-primary">
-          <RemoveRedEyeIcon/>
+        <Link to={{ pathname: `/user/view/${values.id}` }}>
+          <RemoveRedEyeIcon style={{ color: "green" }} />
         </Link>
       </Tooltip>
       <Tooltip title="Edit">
-       
-        <Link to={{ pathname: `/task/edit/${values.id}` }} className="btn btn-primary">
-          <Edit />
+        <Link to={{ pathname: `/user/edit/${values.id}` }}>
+          <Edit style={{ color: "#1890ff" }} />
         </Link>
       </Tooltip>
       <Tooltip title="Delete">
-        
-        <Link onClick={() => {
-            handleDeleteTask(values);
-          }} className="btn btn-primary">
-          <Delete />
+        <Link onClick={() => deleteSwal(values.name)}>
+          <Delete color="error" />
         </Link>
       </Tooltip>
-    </Stack>
-  );
-};
-
-const Name = ({ row }) => {
-  const { values } = row;
-  return (
-    <Stack
-      direction="row"
-      alignItems="left"
-      justifyContent="left"
-      spacing={0}
-    >
-      {values.name}
     </Stack>
   );
 };
@@ -346,24 +303,19 @@ CellActions.propTypes = {
   row: PropTypes.object,
 };
 
-Name.propTypes = {
-  row: PropTypes.object,
-};
-Probabi.propTypes = {
-  row: PropTypes.object,
-};
-
-function ListTask() {
+const List = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
 
-  const { tasks } = useSelector((state) => state.task);
-  // const tasks = [];
-  
+  const { users } = useSelector((state) => state.user);
+
   useEffect(() => {
-    dispatch(getTasks());
+    dispatch(getUsers());
+    console.log("ok");
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
+
   const columns = useMemo(
     () => [
       {
@@ -372,29 +324,24 @@ function ListTask() {
         className: "cell-center",
       },
       {
-        Header: "Subject",
-        accessor: "subject",
-      },
-      {
-        Header: "Due Date",
-        accessor: "completed_date_time",
-      },
-      {
-        Header: "Assign To",
-        accessor: "assigned_name",
-      },
-      {
         Header: "Name",
-        accessor: "name",
-        Cell: Name,
+        accessor: "username",
       },
       {
-        Header: "Close Date",
-        accessor: "close_date",
+        Header: "Email",
+        accessor: "email",
       },
       {
-        Header: "Amount",
-        accessor: "amount",
+        Header: "Card ID",
+        accessor: "card_id",
+      },
+      {
+        Header: "Balance",
+        accessor: "balance",
+      },
+      {
+        Header: "Provider",
+        accessor: "provider",
       },
       {
         Header: "Actions",
@@ -407,21 +354,21 @@ function ListTask() {
   );
 
   const renderRowSubComponent = useCallback(
-    // ({ row }) => <View data={tasks[row.id]} />,
-    // [tasks]
+    ({ row }) => <ViewUser data={users[row.id]} />,
+    [users]
   );
+
   return (
     <MainCard content={false}>
       <ScrollX>
         <ReactTable
           columns={columns}
-          data={tasks}
+          data={users}
           getHeaderProps={(column) => column.getSortByToggleProps()}
           renderRowSubComponent={renderRowSubComponent}
         />
       </ScrollX>
     </MainCard>
   );
-}
-
-export default ListTask;
+};
+export default List;

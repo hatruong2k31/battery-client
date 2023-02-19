@@ -1,16 +1,9 @@
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-
 // material-ui
 import {
-  Box,
   Button,
   Divider,
-  FormControl,
   FormHelperText,
   Grid,
-  Link,
-  IconButton,
-  InputAdornment,
   InputLabel,
   OutlinedInput,
   Stack,
@@ -24,13 +17,14 @@ import { Formik } from "formik";
 // project import
 import FirebaseSocial from "./FirebaseSocial";
 import AnimateButton from "../../../components/@extended/AnimateButton";
-
 import { postFogotPwd } from "../../../utils/request";
+import { openSnackbar } from "../../../store/reducers/snackbar";
+import { useDispatch } from "../../../store";
 
 // ============================|| FIREBASE - REGISTER ||============================ //
 
 const AuthFogotPWD = () => {
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
   return (
     <>
       <Formik
@@ -52,13 +46,33 @@ const AuthFogotPWD = () => {
                   return (
                     setStatus({ success: true }),
                     setSubmitting(true),
-                    setErrors({ submit: "Check your email for the next step!" })
+                    dispatch(
+                      openSnackbar({
+                        open: true,
+                        message: "Check your inbox for the next step!",
+                        variant: "alert",
+                        alert: {
+                          color: "success",
+                        },
+                        close: false,
+                      })
+                    )
                   );
                 } else {
                   return (
                     setSubmitting(false),
                     setStatus({ success: false }),
-                    setErrors({ submit: response.message })
+                    dispatch(
+                      openSnackbar({
+                        open: true,
+                        message: "Invalid email!",
+                        variant: "alert",
+                        alert: {
+                          color: "error",
+                        },
+                        close: false,
+                      })
+                    )
                   );
                 }
               })
@@ -71,7 +85,6 @@ const AuthFogotPWD = () => {
               });
           } catch (err) {
             return (
-              console.error(err),
               setStatus({ success: false }),
               setErrors({ submit: err.message }),
               setSubmitting(false)
@@ -135,16 +148,16 @@ const AuthFogotPWD = () => {
                 </AnimateButton>
               </Grid>
               <Grid item xs={12}>
-                <Divider>
-                  <Typography variant="caption">Sign up with</Typography>
+                <Divider sx={{ mb: 2 }}>
+                  <Typography variant="caption">Or login with</Typography>
                 </Divider>
+                <FirebaseSocial />
               </Grid>
               <Grid item xs={12}></Grid>
             </Grid>
           </form>
         )}
       </Formik>
-      <FirebaseSocial />
     </>
   );
 };

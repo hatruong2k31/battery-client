@@ -1,9 +1,8 @@
 // assets
-import { LoginOutlined, ProfileOutlined } from "@ant-design/icons";
+import { ProfileOutlined } from "@ant-design/icons";
 
 // icons
 const icons = {
-  LoginOutlined,
   ProfileOutlined,
 };
 
@@ -15,38 +14,31 @@ const coreFunctions = {
   type: "group",
   children: [
     {
-      id: "account",
-      title: "Account",
+      id: "user",
+      title: "User",
       type: "item",
-      url: "/account/list",
-      icon: icons.LoginOutlined,
-    },
-    {
-      id: "contact",
-      title: "Contact",
-      type: "item",
-      url: "/contact/list",
+      url: "/user/list",
       icon: icons.ProfileOutlined,
     },
     {
-      id: "lead",
-      title: "Lead",
+      id: "payment",
+      title: "Payment",
       type: "item",
-      url: "/lead/list",
+      url: "/payment/list",
       icon: icons.ProfileOutlined,
     },
     {
-      id: "opportunity",
-      title: "Opportunity",
+      id: "station",
+      title: "Station",
       type: "item",
-      url: "/opportunity/list",
+      url: "/station/list",
       icon: icons.ProfileOutlined,
     },
     {
-      id: "task",
-      title: "Task",
+      id: "battery",
+      title: "Battery",
       type: "item",
-      url: "/task/list",
+      url: "/battery/list",
       icon: icons.ProfileOutlined,
     },
   ],

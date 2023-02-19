@@ -19,6 +19,9 @@ const initialState = {
   productInterests: [],
   leadStatuss: [],
   leadSources: [],
+  oppStages: [],
+  oppTypes: [],
+  oppLossReasons: [],
 };
 
 const slice = createSlice({
@@ -32,6 +35,10 @@ const slice = createSlice({
 
     getAccountTypesSuccess(state, action) {
       state.accountTypes = action.payload;
+    },
+
+    getGendersSuccess(state, action) {
+      state.genders = action.payload;
     },
 
     getEmployeesSuccess(state, action) {
@@ -56,6 +63,15 @@ const slice = createSlice({
 
     getLeadStatussSuccess(state, action) {
       state.leadStatuss = action.payload;
+    },
+    getOppStagesSuccess(state, action) {
+      state.oppStages = action.payload;
+    },
+    getOppTypesSuccess(state, action) {
+      state.oppTypes = action.payload;
+    },
+    getOppLossReasonsSuccess(state, action) {
+      state.oppLossReasons = action.payload;
     },
   },
 });
@@ -86,13 +102,12 @@ export function getMasterDatas(parent_code) {
               $eq: parent_code,
             },
           },
-          sort: [{ column: "created_at", order: "desc" }],
+          sort: [{ column: "id", order: "asc" }],
         },
         {
           encodeValuesOnly: true,
         }
       );
-
       const response = await axios.get(`/api/md/list?${query}`, header);
 
       switch (parent_code) {
@@ -106,6 +121,9 @@ export function getMasterDatas(parent_code) {
           break;
         case "Industry":
           dispatch(slice.actions.getIndustriesSuccess(response.data.data.data));
+          break;
+        case "Gender":
+          dispatch(slice.actions.getGendersSuccess(response.data.data.data));
           break;
         default:
           dispatch(
@@ -136,6 +154,18 @@ export function getEmployees() {
       const response = await masterDataService("Employees");
 
       dispatch(slice.actions.getEmployeesSuccess(response.data.data.data));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
+export function getGenders() {
+  return async () => {
+    try {
+      const response = await masterDataService("Gender");
+
+      dispatch(slice.actions.getGendersSuccess(response.data.data.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -206,6 +236,39 @@ export function getLeadSources() {
   };
 }
 
+export function getOppStages() {
+  return async () => {
+    try {
+      const response = await masterDataService("Opp_Stage");
+      dispatch(slice.actions.getOppStagesSuccess(response.data.data.data));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
+export function getOppTypes() {
+  return async () => {
+    try {
+      const response = await masterDataService("Opp_type");
+      dispatch(slice.actions.getOppTypesSuccess(response.data.data.data));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
+export function getOppLossReasons() {
+  return async () => {
+    try {
+      const response = await masterDataService("Opp_Lost_Reason");
+      dispatch(slice.actions.getOppLossReasonsSuccess(response.data.data.data));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
 const masterDataService = async (parent_code) => {
   try {
     const token = JSON.parse(localStorage.getItem("token"));
@@ -226,7 +289,7 @@ const masterDataService = async (parent_code) => {
             $eq: parent_code,
           },
         },
-        sort: [{ column: "created_at", order: "desc" }],
+        sort: [{ column: "id", order: "asc" }],
       },
       {
         encodeValuesOnly: true,

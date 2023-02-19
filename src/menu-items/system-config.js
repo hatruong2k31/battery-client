@@ -1,25 +1,24 @@
 // assets
-import { LoginOutlined, ProfileOutlined } from "@ant-design/icons";
+import { SettingOutlined } from "@ant-design/icons";
 
 // icons
 const icons = {
-  LoginOutlined,
-  ProfileOutlined,
+  SettingOutlined,
 };
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
 const systemConfig = {
-  id: "System",
-  title: "System",
+  id: "config",
+  title: "Config",
   type: "group",
   children: [
     {
-      id: "system_config",
-      title: "Config",
+      id: "system",
+      title: "System",
       type: "item",
       url: "/system-config/settings",
-      icon: icons.LoginOutlined,
+      icon: icons.SettingOutlined,
     },
   ],
 };

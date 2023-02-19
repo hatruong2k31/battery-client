@@ -15,8 +15,6 @@ const SystemSettingTab = Loadable(
   lazy(() => import("../pages/system-config/system-tabs/settings"))
 );
 
-
-
 //User
 const AddNewUser = Loadable(
   lazy(() => import("../pages/system-config/system-tabs/AddUser"))
@@ -47,9 +45,7 @@ const SystemConfigRoutes = {
             {
               path: "users",
               element: <SystemUsersTab />,
-              children: [
-                
-              ]
+              children: [],
             },
             {
               path: "users-view/:id",
@@ -59,7 +55,7 @@ const SystemConfigRoutes = {
               path: "users-add-new",
               element: <AddNewUser />,
             },
-            
+
             {
               path: "users-edit/:id",
               element: <EditUser />,

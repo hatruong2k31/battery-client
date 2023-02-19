@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, Fragment, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // material-ui
 import { alpha, useTheme } from "@mui/material/styles";
-import { Delete, Edit } from '@mui/icons-material';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import { Delete, Edit } from "@mui/icons-material";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   useMediaQuery,
   Button,
@@ -93,7 +93,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
       initialState: {
         pageIndex: 0,
         pageSize: 5,
-        hiddenColumns: ["image", "description"],
+        hiddenColumns: [],
         sortBy: [sortBy],
       },
     },
@@ -104,15 +104,6 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
     usePagination,
     useRowSelect
   );
-
-  useEffect(() => {
-    if (matchDownSM) {
-      setHiddenColumns(["id", "name", "email", "description", "phone"]);
-    } else {
-      setHiddenColumns(["image", "description"]);
-    }
-    // eslint-disable-next-line
-  }, [matchDownSM]);
 
   const history = useNavigate();
   const handleAddUser = () => {
@@ -174,40 +165,41 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
             ))}
           </TableHead>
           <TableBody {...getTableBodyProps()}>
-            {page.map((row, i) => {
-              prepareRow(row);
-              const rowProps = row.getRowProps();
+            {page &&
+              page.map((row, i) => {
+                prepareRow(row);
+                const rowProps = row.getRowProps();
 
-              return (
-                <Fragment key={i}>
-                  <TableRow
-                    {...row.getRowProps()}
-                    onClick={() => {
-                      row.toggleRowSelected();
-                    }}
-                    sx={{
-                      cursor: "pointer",
-                      bgcolor: row.isSelected
-                        ? alpha(theme.palette.primary.lighter, 0.35)
-                        : "inherit",
-                    }}
-                  >
-                    {row.cells.map((cell, index) => (
-                      <TableCell
-                        key={index}
-                        {...cell.getCellProps([
-                          { className: cell.column.className },
-                        ])}
-                      >
-                        {cell.render("Cell")}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  {row.isExpanded &&
-                    renderRowSubComponent({ row, rowProps, visibleColumns })}
-                </Fragment>
-              );
-            })}
+                return (
+                  <Fragment key={i}>
+                    <TableRow
+                      {...row.getRowProps()}
+                      onClick={() => {
+                        row.toggleRowSelected();
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                        bgcolor: row.isSelected
+                          ? alpha(theme.palette.primary.lighter, 0.35)
+                          : "inherit",
+                      }}
+                    >
+                      {row.cells.map((cell, index) => (
+                        <TableCell
+                          key={index}
+                          {...cell.getCellProps([
+                            { className: cell.column.className },
+                          ])}
+                        >
+                          {cell.render("Cell")}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    {row.isExpanded &&
+                      renderRowSubComponent({ row, rowProps, visibleColumns })}
+                  </Fragment>
+                );
+              })}
             <TableRow sx={{ "&:hover": { bgcolor: "transparent !important" } }}>
               <TableCell sx={{ p: 2, py: 3 }} colSpan={9}>
                 <TablePagination
@@ -234,60 +226,56 @@ ReactTable.propTypes = {
 };
 
 // ==============================|| PRODUCT LIST - MAIN ||============================== //
-const Status = ({row}) => {
+const Status = ({ row }) => {
   const { values } = row;
-  
+
   return (
-    <Stack
-      direction="row"
-      alignItems="left"
-      justifyContent="left"
-      spacing={0}
-    >
-      {(values.blocked) && (
+    <Stack direction="row" alignItems="left" justifyContent="left" spacing={0}>
+      {values.blocked && (
         <Tooltip title="View">
           <Button variant="contained" color="error">
             Not Active
           </Button>
         </Tooltip>
-        )}
-      {(!values.blocked) && (
+      )}
+      {!values.blocked && (
         <Tooltip title="View">
           <Button variant="contained" color="success">
             Active
           </Button>
         </Tooltip>
-        )}
-  </Stack>
+      )}
+    </Stack>
   );
-
-}
+};
 const CellActions = ({ row }) => {
   const { values } = row;
-  
+
   return (
-    <Stack
-      direction="row"
-      alignItems="left"
-      justifyContent="left"
-      spacing={0}
-    >
+    <Stack direction="row" alignItems="left" justifyContent="left" spacing={0}>
       <Tooltip title="View">
-        <Link to={{ pathname: `/system-config/users-view/${values.id}` }} className="btn btn-primary">
-          <RemoveRedEyeIcon/>
+        <Link
+          to={{ pathname: `/system-config/users-view/${values.id}` }}
+          className="btn btn-primary"
+        >
+          <RemoveRedEyeIcon />
         </Link>
       </Tooltip>
       <Tooltip title="Edit">
-       
-        <Link to={{ pathname: `/system-config/users-edit/${values.id}` }} className="btn btn-primary">
+        <Link
+          to={{ pathname: `/system-config/users-edit/${values.id}` }}
+          className="btn btn-primary"
+        >
           <Edit />
         </Link>
       </Tooltip>
       <Tooltip title="Delete">
-        
-        <Link onClick={(e) => {
+        <Link
+          onClick={(e) => {
             e.stopPropagation();
-          }} className="btn btn-primary">
+          }}
+          className="btn btn-primary"
+        >
           <Delete />
         </Link>
       </Tooltip>
@@ -303,32 +291,6 @@ Status.propTypes = {
 };
 
 //===== Model Delete =====//
-const DeleteModal = () => {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  return (
-    <div>
-      <Modal
-        keepMounted
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="keep-mounted-modal-title"
-        aria-describedby="keep-mounted-modal-description"
-      >
-        <Box>
-          <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-            Text in a modal
-          </Typography>
-          <Typography id="keep-mounted-modal-description" sx={{ mt: 2 }}>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-          </Typography>
-        </Box>
-      </Modal>
-    </div>
-  );
-};
 
 const AccountList = () => {
   const theme = useTheme();

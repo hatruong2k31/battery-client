@@ -1,0 +1,98 @@
+{
+  "name": "battery-client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@ant-design/colors": "^6.0.0",
+    "@ant-design/icons": "^4.8.0",
+    "@auth0/auth0-spa-js": "^2.0.0",
+    "@base2/pretty-print-object": "^1.0.2",
+    "@date-io/date-fns": "^2.16.0",
+    "@date-io/dayjs": "^2.16.0",
+    "@date-io/moment": "^2.16.1",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/base": "^5.0.0-alpha.108",
+    "@mui/icons-material": "^5.11.0",
+    "@mui/material": "^5.10.16",
+    "@mui/x-date-pickers": "^5.0.12",
+    "@reduxjs/toolkit": "^1.9.1",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/babel__core": "^7.1.20",
+    "apexcharts": "^3.36.3",
+    "axios": "^1.2.1",
+    "bootstrap": "^5.2.3",
+    "chance": "^1.1.9",
+    "date-fns": "^2.29.3",
+    "dayjs": "^1.11.7",
+    "dotenv": "^16.0.3",
+    "firebase": "^9.15.0",
+    "formik": "^2.2.9",
+    "framer-motion": "^7.7.2",
+    "jwt-decode": "^3.1.2",
+    "match-sorter": "^6.3.1",
+    "moment": "^2.29.4",
+    "qs": "^6.11.0",
+    "react": "^18.2.0",
+    "react-apexcharts": "^1.4.0",
+    "react-bootstrap": "^2.6.0",
+    "react-copy-to-clipboard": "^5.1.0",
+    "react-datepicker": "^4.8.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^18.2.0",
+    "react-element-to-jsx-string": "^15.0.0",
+    "react-intl": "^6.2.5",
+    "react-number-format": "^5.1.2",
+    "react-redux": "^8.0.5",
+    "react-router-bootstrap": "^0.26.2",
+    "react-scripts": "^5.0.1",
+    "react-select": "^5.7.0",
+    "react-swal": "^4.0.0",
+    "react-sweetalert2": "^0.5.2",
+    "react-syntax-highlighter": "^15.5.0",
+    "react-table": "^7.8.0",
+    "redux": "^4.2.0",
+    "redux-persist": "^6.0.0",
+    "sass": "^1.56.1",
+    "simplebar": "^5.3.9",
+    "simplebar-react": "^2.4.3",
+    "stylis-plugin-rtl": "^2.1.1",
+    "sweetalert2": "^11.4.8",
+    "sweetalert2-react-content": "^5.0.7",
+    "web-vitals": "^2.1.4",
+    "yup": "^0.32.11"
+  },
+  "devDependencies": {
+    "babel-plugin-module-resolver": "^5.0.0",
+    "classnames": "^2.3.2",
+    "customize-cra": "^1.0.0",
+    "react-router-dom": "^6.4.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

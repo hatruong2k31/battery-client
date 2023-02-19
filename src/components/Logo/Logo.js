@@ -22,7 +22,7 @@ const Logo = () => {
      *
      */
     <>
-      <h1>Field Sales</h1>
+      <h1>Battery Client</h1>
     </>
   );
 };

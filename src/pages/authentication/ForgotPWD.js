@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 
 // material-ui
-import { Grid, Stack, Typography } from "@mui/material";
+import { Grid, Stack, Typography, Link } from "@mui/material";
 
 // project import
 import AuthFogotPWD from "./auth-forms/AuthForgotPWD";
@@ -15,20 +15,29 @@ const ForgotPWD = () => (
       <Grid item xs={12}>
         <Stack
           direction="row"
-          justifyContent="space-between"
+          justifyContent="right"
+          alignItems="center"
+          spacing={2}
+        >
+          <Link
+            alignRight
+            variant="h6"
+            component={RouterLink}
+            to="/login"
+            color="primary"
+          >
+            Back to Login
+          </Link>
+        </Stack>
+      </Grid>
+      <Grid item xs={12}>
+        <Stack
+          direction="row"
+          justifyContent="center"
           alignItems="baseline"
           sx={{ mb: { xs: -0.5, sm: 0.5 } }}
         >
           <Typography variant="h4">Forgot password</Typography>
-          <Typography
-            component={Link}
-            to="/login"
-            variant="body1"
-            sx={{ textDecoration: "none" }}
-            color="primary"
-          >
-            Back to Login
-          </Typography>
         </Stack>
       </Grid>
       <Grid item xs={12}>

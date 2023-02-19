@@ -1,5 +1,6 @@
 // third-party
 import { createSlice } from "@reduxjs/toolkit";
+import qs from "qs";
 
 // project imports
 import axios from "../../utils/axios";
@@ -58,9 +59,22 @@ export function getUsers() {
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get("/api/users", header);
-      // console.log(response.data);
-      dispatch(slice.actions.getUsersSuccess(response.data));
+
+      const query = qs.stringify(
+        {
+          pagination: { isPage: false },
+          filters: {
+            is_delete: {
+              $eq: false,
+            },
+          },
+        },
+        {
+          encodeValuesOnly: true,
+        }
+      );
+      const response = await axios.get(`/api/user/list?${query}`, header);
+      dispatch(slice.actions.getUsersSuccess(response.data.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -70,8 +84,8 @@ export function getUsers() {
 export function filterUsers(filter) {
   return async () => {
     try {
-      const response = await axios.post("/api/users/filter", { filter });
-      dispatch(slice.actions.filterUsersSuccess(response.data));
+      const response = await axios.post("/api/user/filter", { filter });
+      dispatch(slice.actions.filterUsersSuccess(response.data.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -87,8 +101,8 @@ export function getUser(id) {
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(`/api/guser/detail/${id}`, header);
-      dispatch(slice.actions.getUsersuccess(response.data.data[0]));
+      const response = await axios.get(`/api/user/detail/${id}`, header);
+      dispatch(slice.actions.getUsersuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

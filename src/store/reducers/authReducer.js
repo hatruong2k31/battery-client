@@ -24,7 +24,6 @@ const authReducer = (state, action) => {
     case LOGIN: {
       const user = action.payload.data?.user;
       const token = action.payload.data?.jwt;
-      console.log(token);
       localStorage.setItem("token", JSON.stringify(token));
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("isLogin", true);

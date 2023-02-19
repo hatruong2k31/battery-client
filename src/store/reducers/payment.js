@@ -10,14 +10,13 @@ import { dispatch } from "../index";
 
 const initialState = {
   error: null,
-  contacts: [],
-  contact: null,
-  related: [],
+  payments: [],
+  payment: null,
   deleted: null,
 };
 
 const slice = createSlice({
-  name: "contact",
+  name: "payment",
   initialState,
   reducers: {
     // HAS ERROR
@@ -25,24 +24,19 @@ const slice = createSlice({
       state.error = action.payload;
     },
 
-    // GET contacts
-    getContactsSuccess(state, action) {
-      state.contacts = action.payload;
+    // GET payments
+    getPaymentsSuccess(state, action) {
+      state.payments = action.payload;
     },
 
-    // FILTER contacts
-    filterContactsSuccess(state, action) {
-      state.contacts = action.payload;
+    // FILTER payments
+    filterPaymentsSuccess(state, action) {
+      state.payments = action.payload;
     },
 
     // GET PRODUCT
-    getContactSuccess(state, action) {
-      state.contact = action.payload;
-    },
-
-    // GET RELATED contacts
-    getRelatedSuccess(state, action) {
-      state.related = action.payload;
+    getPaymentSuccess(state, action) {
+      state.payment = action.payload;
     },
 
     // GET DELETE result
@@ -57,7 +51,7 @@ export default slice.reducer;
 
 // ----------------------------------------------------------------------
 
-export function getContacts() {
+export function getPayments() {
   return async () => {
     try {
       const token = JSON.parse(localStorage.getItem("token"));
@@ -82,57 +76,27 @@ export function getContacts() {
         }
       );
 
-      const response = await axios.get(`/api/contact/list?${query}`, header);
+      const response = await axios.get(`/api/payment/list?${query}`, header);
 
-      dispatch(slice.actions.getContactsSuccess(response.data.data.data));
+      dispatch(slice.actions.getPaymentsSuccess(response.data.data.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
   };
 }
 
-export function filterContacts(filter) {
+export function filterPayments(filter) {
   return async () => {
     try {
-      const response = await axios.post("/api/contact/list", { filter });
-      dispatch(slice.actions.filterContactsSuccess(response.data));
+      const response = await axios.post("/api/payment/list", { filter });
+      dispatch(slice.actions.filterPaymentsSuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
   };
 }
 
-export function getContact(id) {
-  return async () => {
-    try {
-      const token = JSON.parse(localStorage.getItem("token"));
-      let header = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      const response = await axios.get(`/api/contact/detail/${id}`, header);
-
-      dispatch(slice.actions.getContactSuccess(response.data));
-    } catch (error) {
-      dispatch(slice.actions.hasError(error));
-    }
-  };
-}
-
-export function getRelated(id) {
-  return async () => {
-    try {
-      const response = await axios.post("/api/product/related", { id });
-      dispatch(slice.actions.getRelatedSuccess(response.data));
-    } catch (error) {
-      dispatch(slice.actions.hasError(error));
-    }
-  };
-}
-
-export function deleteContact(id) {
+export function getPayment(id) {
   return async () => {
     try {
       const token = JSON.parse(localStorage.getItem("token"));
@@ -141,7 +105,26 @@ export function deleteContact(id) {
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.delete(`/api/contact/${id}`, header);
+
+      const response = await axios.get(`/api/payment/detail/${id}`, header);
+
+      dispatch(slice.actions.getPaymentSuccess(response.data.data[0]));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
+export function deletePayment(id) {
+  return async () => {
+    try {
+      const token = JSON.parse(localStorage.getItem("token"));
+      let header = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.delete(`/api/payment/${id}`, header);
       dispatch(slice.actions.getDeleteResult(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));

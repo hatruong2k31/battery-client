@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import {
@@ -11,26 +11,47 @@ import {
   Checkbox,
   FormControlLabel,
   Typography,
+  MenuItem,
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 // project imports
 import MainCard from "../../../components/MainCard";
 import { useDispatch, useSelector } from "../../../store";
-import { getContact } from "../../../store/reducers/contact";
-import { openSnackbar } from "../../../store/reducers/snackbar";
+import { getPayment } from "../../../store/reducers/payment";
+import { getGenders } from "../../../store/reducers/masterData";
+// import { openSnackbar } from "../../../store/reducers/snackbar";
+import { selectProvince, selectDistrict } from "../../../utils/selectRequest";
 import { del } from "../../../utils/request";
+
 const ViewContact = () => {
   const history = useNavigate();
   const { id } = useParams();
-
-  const dispatch = useDispatch();
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const countries = [{ id: "01", name: "Việt Nam" }];
+  const { genders } = useSelector((state) => state.masterData);
   const { contact } = useSelector((state) => state.contact);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getContact(id));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    dispatch(getGenders());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(getPayment(id));
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    if (contact && contact.id === Number(id)) {
+      selectProvince(contact.country).then((response) =>
+        setProvinces(response.data)
+      );
+      selectDistrict(contact.province).then((response) =>
+        setDistricts(response.data)
+      );
+    }
+  }, [contact]);
 
   const handleCancel = () => {
     history(`/contact/list`);
@@ -38,7 +59,7 @@ const ViewContact = () => {
 
   return (
     <>
-      {contact && contact.data[0].id === Number(id) && (
+      {contact && contact.id === Number(id) && (
         <MainCard title="View Contact">
           <Stack
             direction="row"
@@ -46,59 +67,7 @@ const ViewContact = () => {
             alignItems="center"
             sx={{ p: 0, pb: 0 }}
             spacing={1}
-          >
-            <Button
-              variant="contained"
-              onClick={() => {
-                history(`/contact/edit/${contact.data[0].id}`);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={async () => {
-                if (
-                  !window.confirm(
-                    `Are you sure you want to delete ${contact.data[0].lastname}`
-                  )
-                ) {
-                  return;
-                }
-                del(`/api/contact/${contact.data[0].id}`).then((response) => {
-                  if (response.status === 200) {
-                    dispatch(
-                      openSnackbar({
-                        open: true,
-                        message: "Delete Success",
-                        variant: "alert",
-                        alert: {
-                          color: "success",
-                        },
-                        close: false,
-                      })
-                    );
-                    history(`/contact/list`);
-                  } else {
-                    dispatch(
-                      openSnackbar({
-                        open: true,
-                        message: `Delete Error! ${response?.message}`,
-                        variant: "alert",
-                        alert: {
-                          color: "error",
-                        },
-                        close: false,
-                      })
-                    );
-                  }
-                });
-              }}
-            >
-              Delete
-            </Button>
-          </Stack>
+          ></Stack>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <MainCard title="Contact information">
@@ -108,7 +77,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="firstname"
                       type="text"
-                      value={contact.data[0]?.firstname}
+                      value={contact.firstname}
                       name="firstname"
                       fullWidth
                       readOnly
@@ -119,7 +88,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="middlename"
                       type="text"
-                      value={contact.data[0]?.middlename}
+                      value={contact.middlename}
                       name="middlename"
                       fullWidth
                       readOnly
@@ -139,7 +108,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="lastname"
                       type="text"
-                      value={contact.data[0]?.lastname}
+                      value={contact.lastname}
                       name="lastname"
                       fullWidth
                       readOnly
@@ -159,7 +128,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="identity_card"
                       type="text"
-                      value={contact.data[0]?.identity_card}
+                      value={contact.identity_card}
                       name="identity_card"
                       fullWidth
                       readOnly
@@ -172,7 +141,7 @@ const ViewContact = () => {
                         <DatePicker
                           readOnly
                           id="birthdate"
-                          value={contact.data[0]?.birthdate}
+                          value={contact.birthdate}
                           name="birthdate"
                           closeOnSelect
                           inputFormat="DD/MM/YYYY"
@@ -187,19 +156,35 @@ const ViewContact = () => {
                     <InputLabel sx={{ mb: 1 }}>Gender</InputLabel>
                     <TextField
                       name="gender"
+                      select
                       id="gender"
+                      placeholder="Select Gender"
                       fullWidth
-                      readOnly
-                      defaultValue={contact.data[0]?.gender || "0"}
-                      variant="outlined"
-                    ></TextField>
+                      defaultValue={contact.gender || ""}
+                      inputProps={{ readOnly: true }}
+                    >
+                      {genders.map((option) => (
+                        <MenuItem key={option.id} value={option.code}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Mobile Phone</InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>
+                      Mobile
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{ color: `error.main` }}
+                      >
+                        *
+                      </Typography>
+                    </InputLabel>
                     <OutlinedInput
                       id="mobile_phone"
                       type="text"
-                      value={contact.data[0]?.mobile_phone}
+                      value={contact.mobile_phone}
                       name="mobile_phone"
                       fullWidth
                       readOnly
@@ -210,7 +195,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="phone"
                       type="text"
-                      value={contact.data[0]?.phone}
+                      value={contact.phone}
                       name="phone"
                       fullWidth
                       readOnly
@@ -221,7 +206,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="homephone"
                       type="text"
-                      value={contact.data[0]?.homephone}
+                      value={contact.homephone}
                       name="homephone"
                       fullWidth
                       readOnly
@@ -241,7 +226,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="email"
                       type="text"
-                      value={contact.data[0]?.email}
+                      value={contact.email}
                       name="email"
                       fullWidth
                       readOnly
@@ -252,7 +237,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="title"
                       type="text"
-                      value={contact.data[0]?.title}
+                      value={contact.title}
                       name="title"
                       fullWidth
                       readOnly
@@ -263,29 +248,30 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="department"
                       type="text"
-                      value={contact.data[0]?.department}
+                      value={contact.department}
                       name="department"
                       fullWidth
                       readOnly
                     />
                   </Grid>
                   <Grid item xs={12} sm={12}>
-                    <InputLabel sx={{ mb: 1 }}>Account Name - Email</InputLabel>
-                    <TextField
-                      name="account_name"
-                      id="account_name"
-                      fullWidth
-                      readOnly
-                      defaultValue={contact.data[0]?.account_name || ""}
-                      variant="outlined"
-                    ></TextField>
+                    <InputLabel sx={{ mb: 1 }}>
+                      Account Name
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{ color: `error.main` }}
+                      >
+                        *
+                      </Typography>
+                    </InputLabel>
                   </Grid>
                   <Grid item xs={12} sm={12}>
                     <InputLabel sx={{ mb: 1 }}>Description</InputLabel>
                     <OutlinedInput
                       id="description"
                       type="text"
-                      value={contact.data[0]?.description}
+                      value={contact.description}
                       name="description"
                       rows={2}
                       multiline
@@ -296,85 +282,28 @@ const ViewContact = () => {
                   <Grid item xs={12} sm={6}>
                     <FormControlLabel
                       control={
-                        contact.data[0]?.donotcall ? (
+                        contact.donotcall ? (
                           <Checkbox defaultChecked value={true} />
                         ) : (
                           <Checkbox value={true} />
                         )
                       }
+                      onClick="return false;"
                       label="Do not call"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <InputLabel sx={{ mt: 1 }}>
-                      Contact Owner : {contact.data[0]?.owner_name}
+                      Contact Owner :
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{ fontWeight: 1000, fontSize: 15 }}
+                      >
+                        {" " + contact.owner_name}
+                      </Typography>
                     </InputLabel>
                   </Grid>
-                  {/* <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Create By Name
-                            </InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="created_by_name"
-                              type="text"
-                              value={contact.data[0]?.created_by_name}
-                              name="created_by_name"
-                              fullWidth readOnly
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Update By Name
-                            </InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="updated_by_name"
-                              type="text"
-                              value={contact.data[0]?.updated_by_name}
-                              name="updated_by_name"
-                              fullWidth readOnly
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>Create At</InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="created_at"
-                              type="text"
-                              value={contact.data[0]?.created_at
-                                ?.replace("T", " ")
-                                ?.slice(0, 19)}
-                              name="created_at"
-                              fullWidth readOnly
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>Update At</InputLabel>
-                            <TextField
-                              readOnly
-                              id="updated_at"
-                              type="text"
-                              value={contact.data[0]?.updated_at
-                                ?.replace("T", " ")
-                                ?.slice(0, 19)}
-                              name="updated_at"
-                              fullWidth readOnly
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Convert From Lead Name
-                            </InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="convert_from_lead_name"
-                              type="text"
-                              value={contact.data[0]?.convert_from_lead_name}
-                              name="convert_from_lead_name"
-                              fullWidth readOnly
-                            />
-                          </Grid> */}
                 </Grid>
               </MainCard>
             </Grid>
@@ -382,45 +311,69 @@ const ViewContact = () => {
               <MainCard title="Address information">
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
+                    <InputLabel sx={{ mb: 1 }}>Country</InputLabel>
+                    <TextField
+                      name="country"
+                      select
+                      id="country"
+                      placeholder="Select Country"
+                      fullWidth
+                      inputProps={{ readOnly: true }}
+                      defaultValue={contact.country || "1"}
+                      variant="outlined"
+                    >
+                      {countries.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <InputLabel sx={{ mb: 1 }}>Province</InputLabel>
+                    <TextField
+                      name="province"
+                      select
+                      id="province"
+                      placeholder="Select Province"
+                      fullWidth
+                      inputProps={{ readOnly: true }}
+                      defaultValue={contact.province || ""}
+                      variant="outlined"
+                    >
+                      {provinces.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <InputLabel sx={{ mb: 1 }}>District</InputLabel>
+                    <TextField
+                      name="district"
+                      select
+                      id="district"
+                      placeholder="Select District"
+                      fullWidth
+                      inputProps={{ readOnly: true }}
+                      defaultValue={contact.district || ""}
+                      variant="outlined"
+                    >
+                      {districts.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
                     <InputLabel sx={{ mb: 1 }}>Street</InputLabel>
                     <OutlinedInput
                       id="street"
                       type="text"
-                      value={contact.data[0]?.street}
+                      value={contact.street}
                       name="street"
-                      fullWidth
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>City</InputLabel>
-                    <OutlinedInput
-                      id="city"
-                      type="text"
-                      value={contact.data[0]?.city}
-                      name="city"
-                      fullWidth
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Province</InputLabel>
-                    <OutlinedInput
-                      id="province"
-                      type="text"
-                      value={contact.data[0]?.province}
-                      name="address"
-                      fullWidth
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Country</InputLabel>
-                    <OutlinedInput
-                      id="country"
-                      type="text"
-                      value={contact.data[0]?.country}
-                      name="country"
                       fullWidth
                       readOnly
                     />
@@ -428,26 +381,31 @@ const ViewContact = () => {
                 </Grid>
               </MainCard>
             </Grid>
-          </Grid>
-          <Grid item xs={12}>
-            <Stack
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-              spacing={2}
-              sx={{ mt: 6 }}
-            >
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleCancel}
+            <Grid item xs={12}>
+              <Stack
+                direction="row"
+                justifyContent="right"
+                alignItems="center"
+                spacing={2}
+                sx={{ mt: 2 }}
               >
-                Cancel
-              </Button>
-              {/* <Button variant="contained" onClick={handleEdit}>
-                Edit
-              </Button> */}
-            </Stack>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    history(`/contact/edit/${contact.id}`);
+                  }}
+                >
+                  Edit
+                </Button>
+              </Stack>
+            </Grid>
           </Grid>
         </MainCard>
       )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import moment from "moment";
 // material-ui
 import {
   Grid,
@@ -15,54 +15,48 @@ import {
   Typography,
   FormHelperText,
 } from "@mui/material";
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
+// import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 // project imports
 import * as Yup from "yup";
 import { Formik } from "formik";
 import { useDispatch, useSelector } from "../../../store";
-import { getContact } from "../../../store/reducers/contact";
-import { getAccounts } from "../../../store/reducers/account";
+import { getContact } from "../../../store/reducers/payment";
 import MainCard from "../../../components/MainCard";
-import { put } from "../../../utils/request";
-import { selectGender } from "../../../utils/selectRequest";
+import { put, del } from "../../../utils/request";
+import { selectProvince, selectDistrict } from "../../../utils/selectRequest";
 import { openSnackbar } from "../../../store/reducers/snackbar";
-import { del } from "../../../utils/request";
+import { getGenders } from "../../../store/reducers/masterData";
 
 const EditContact = () => {
   const { id } = useParams();
   const history = useNavigate();
-  const [genders, setGenders] = useState([]);
-
-  const dispatch = useDispatch();
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  // const [wards, setWards] = useState([]);
+  const countries = [{ id: "01", name: "Việt Nam" }];
+  const { genders } = useSelector((state) => state.masterData);
   const { contact } = useSelector((state) => state.contact);
-  const { accounts } = useSelector((state) => state.account);
-  const [accountData, setAccountData] = useState([]);
-
-  // time
-  var today = new Date();
-  var dd = String(today.getDate()).padStart(2, "0");
-  var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
-  var yyyy = today.getFullYear();
-  today = dd + "-" + mm + "-" + yyyy;
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    selectGender().then((response) => {
-      return setGenders(response.data);
-    });
-    dispatch(getAccounts());
+    dispatch(getGenders());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (accounts) {
-      setAccountData(accounts);
-    }
-  }, [accounts]);
 
   useEffect(() => {
     dispatch(getContact(id));
   }, [id, dispatch]);
+
+  useEffect(() => {
+    if (contact && contact.id === Number(id)) {
+      selectProvince(contact?.country).then((response) =>
+        setProvinces(response.data)
+      );
+      selectDistrict(contact?.province).then((response) =>
+        setDistricts(response.data)
+      );
+    }
+  }, [contact]);
 
   const handleCancel = () => {
     history(`/contact/list`);
@@ -70,68 +64,108 @@ const EditContact = () => {
 
   return (
     <>
-      {contact && contact.data[0].id === Number(id) && (
+      {contact && contact.id === Number(id) && (
         <Formik
-          initialValues={contact?.data[0]}
+          initialValues={{ ...contact }}
           enableReinitialize
           validationSchema={Yup.object().shape({
             firstname: Yup.string()
               .matches(
-                "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$",
+                "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
                 "Please enter a valid First Name"
               )
+              .max(70, "No more than 70 characters")
               .nullable(),
             middlename: Yup.string()
               .matches(
-                "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$",
-                "Please enter a valid Middlename Name"
+                "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
+                "Please enter a valid Middle Name"
               )
+              .max(70, "No more than 70 characters")
               .nullable(),
             lastname: Yup.string()
               .matches(
-                "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$",
+                "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
                 "Please enter a valid Last Name"
               )
+              .max(70, "No more than 70 characters")
               .required("Last Name must be completed"),
-            description: Yup.string().max(255).nullable(),
-            account_name: Yup.string().nullable(),
+            description: Yup.string()
+              .max(255, "No more than 255 characters")
+              .nullable(),
+            birthdate: Yup.date()
+              .max(moment(Date.now()), "No more than today")
+              .nullable(),
+            account_id: Yup.string()
+              .required("Account Name must be completed")
+              .nullable("Account Name must be completed"),
             gender: Yup.string().nullable(),
-            title: Yup.string().nullable(),
-            department: Yup.string().nullable(),
+            title: Yup.string()
+              .max(255, "No more than 255 characters")
+              .nullable(),
+            department: Yup.string()
+              .max(255, "No more than 255 characters")
+              .nullable(),
             identity_card: Yup.string()
               .matches("^[0-9]*$", "Please enter a valid Identity Card")
-              .max(12)
+              .max(20, "No more than 20 characters")
               .required("Identity Card must be completed"),
             email: Yup.string()
               .email("Please enter a valid Email")
-              .max(255)
+              .max(255, "No more than 255 characters")
               .required("Email must be completed"),
             phone: Yup.string()
               .matches("^0[0-9]{9,10}$", "Please enter a valid Phone")
-              .min(10)
-              .max(11)
+              .min(10, "Please enter a valid Phone")
+              .max(11, "Please enter a valid Phone")
               .nullable(),
             homephone: Yup.string()
               .matches("^0[0-9]{9,10}$", "Please enter a valid Home Phone")
-              .min(10)
-              .max(11)
+              .min(10, "Please enter a valid Phone")
+              .max(11, "Please enter a valid Phone")
               .nullable(),
             mobile_phone: Yup.string()
               .matches("^0[0-9]{9,10}$", "Please enter a valid Mobile Phone")
-              .min(10)
-              .max(11)
+              .min(10, "Please enter a valid Phone")
+              .max(11, "Please enter a valid Phone")
               .required("Mobile Phone must be completed"),
-            street: Yup.string().nullable(),
-            city: Yup.string().nullable(),
+            street: Yup.string()
+              .max(255, "No more than 255 characters")
+              .nullable(),
+            district: Yup.string().nullable(),
             country: Yup.string().nullable(),
             province: Yup.string().nullable(),
           })}
           onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
             try {
+              if (values.middlename) {
+                values.middlename = values.middlename.trim();
+              }
+              if (values.firstname) {
+                values.firstname = values.firstname.trim();
+              }
+              values.lastname = values.lastname.trim();
+              values.name =
+                values.firstname && values.middlename // nếu có f và m
+                  ? values.lastname.concat(
+                      " ",
+                      values.middlename,
+                      " ",
+                      values.firstname
+                    )
+                  : values.firstname && !values.middlename //nếu có f và không có m
+                  ? values.lastname.concat(" ", values.firstname)
+                  : !values.firstname && values.middlename //nếu có m và không có f
+                  ? values.lastname.concat(" ", values.middlename)
+                  : values.lastname; //chỉ có l
               if (values.donotcall === false || null) {
                 values.donotcall = false;
               }
-
+              if (values.birthdate) {
+                values.birthdate = new Date(values.birthdate);
+              } else {
+                values.birthdate = null;
+              }
               await put(`api/contact/detail/${id}`, values)
                 .then(function (response) {
                   if (response.status === 200) {
@@ -139,7 +173,7 @@ const EditContact = () => {
                       dispatch(
                         openSnackbar({
                           open: true,
-                          message: "Submit Success",
+                          message: `Contact ${values?.name} was updated`,
                           variant: "alert",
                           alert: {
                             color: "success",
@@ -149,14 +183,15 @@ const EditContact = () => {
                       ),
                       setSubmitting(true),
                       setStatus({ success: true }),
-                      history(`/contact/edit/${id}`)
+                      dispatch(getContact(id)),
+                      history(`/contact/list`)
                     );
                   } else {
                     return (
                       dispatch(
                         openSnackbar({
                           open: true,
-                          message: response?.error?.message,
+                          message: response?.details,
                           variant: "alert",
                           alert: {
                             color: "error",
@@ -165,8 +200,7 @@ const EditContact = () => {
                         })
                       ),
                       setSubmitting(false),
-                      setStatus({ success: false }),
-                      setErrors({ submit: response?.error?.message })
+                      setStatus({ success: false })
                     );
                   }
                 })
@@ -184,14 +218,24 @@ const EditContact = () => {
                       })
                     ),
                     setSubmitting(false),
-                    setStatus({ success: false }),
-                    setErrors({ submit: error.response?.data?.message })
+                    setStatus({ success: false })
                   );
                 });
             } catch (err) {
               setStatus({ success: false });
               setErrors({ submit: err.message });
               setSubmitting(false);
+              dispatch(
+                openSnackbar({
+                  open: true,
+                  message: err.message,
+                  variant: "alert",
+                  alert: {
+                    color: "error",
+                  },
+                  close: false,
+                })
+              );
             }
           }}
         >
@@ -206,60 +250,8 @@ const EditContact = () => {
             setFieldValue,
           }) => (
             <form noValidate onSubmit={handleSubmit}>
-              {contact && contact.data[0].id === Number(id) && (
+              {contact && contact.id === Number(id) && (
                 <MainCard title="Edit Contact">
-                  <Stack
-                    direction="row"
-                    justifyContent="flex-end"
-                    alignItems="center"
-                    sx={{ p: 0, pb: 0 }}
-                    spacing={1}
-                  >
-                    <Button
-                      variant="contained"
-                      onClick={async () => {
-                        if (
-                          !window.confirm(
-                            `Are you sure you want to delete ${contact.data[0].lastname}`
-                          )
-                        ) {
-                          return;
-                        }
-                        del(`/api/contact/${contact.data[0].id}`).then(
-                          (response) => {
-                            if (response.status === 200) {
-                              dispatch(
-                                openSnackbar({
-                                  open: true,
-                                  message: "Delete Success",
-                                  variant: "alert",
-                                  alert: {
-                                    color: "success",
-                                  },
-                                  close: false,
-                                })
-                              );
-                              history(`/contact/list`);
-                            } else {
-                              dispatch(
-                                openSnackbar({
-                                  open: true,
-                                  message: `Delete Error! ${response?.message}`,
-                                  variant: "alert",
-                                  alert: {
-                                    color: "error",
-                                  },
-                                  close: false,
-                                })
-                              );
-                            }
-                          }
-                        );
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </Stack>
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <MainCard title="Contact information">
@@ -380,9 +372,7 @@ const EditContact = () => {
                               id="birthdate"
                               type="date"
                               name="birthdate"
-                              value={
-                                values?.birthdate ? values.birthdate : null
-                              }
+                              value={values.birthdate}
                               onBlur={handleBlur}
                               onChange={handleChange}
                               error={Boolean(
@@ -418,14 +408,27 @@ const EditContact = () => {
                                   closeOnSelect
                                   inputFormat="DD/MM/YYYY"
                                   renderInput={(params) => (
-                                    <TextField {...params} />
+                                    <TextField
+                                      error={Boolean(
+                                        touched.birthdate && errors.birthdate
+                                      )}
+                                      {...params}
+                                    />
                                   )}
                                   mask="__/__/____"
-                                  maxDate={dayjs(today)}
+                                  maxDate={Date.now()}
                                   fullWidth
                                 />
                               </Stack>
                             </LocalizationProvider>
+                            {touched.birthdate && errors.birthdate && (
+                              <FormHelperText
+                                error
+                                id="standard-weight-helper-text-birthdate"
+                              >
+                                {errors.birthdate}
+                              </FormHelperText>
+                            )}
                           </Grid> */}
                           <Grid item xs={12} sm={6}>
                             <InputLabel sx={{ mb: 1 }}>Gender</InputLabel>
@@ -435,10 +438,8 @@ const EditContact = () => {
                               id="gender"
                               placeholder="Select Gender"
                               fullWidth
-                              defaultValue={values?.gender || "0"}
-                              variant="outlined"
+                              defaultValue={values?.gender || ""}
                               onChange={handleChange}
-                              onBlur={handleBlur}
                             >
                               {genders.map((option) => (
                                 <MenuItem key={option.id} value={option.code}>
@@ -449,7 +450,7 @@ const EditContact = () => {
                           </Grid>
                           <Grid item xs={12} sm={6}>
                             <InputLabel sx={{ mb: 1 }}>
-                              Mobile Phone
+                              Mobile
                               <Typography
                                 component="span"
                                 variant="caption"
@@ -598,28 +599,6 @@ const EditContact = () => {
                             )}
                           </Grid>
                           <Grid item xs={12} sm={12}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Account Name - Email
-                            </InputLabel>
-                            <TextField
-                              name="account_name"
-                              select
-                              id="account_name"
-                              placeholder="Select an Account"
-                              fullWidth
-                              defaultValue={values?.account_id || ""}
-                              variant="outlined"
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                            >
-                              {accountData.map((option) => (
-                                <MenuItem key={option.id} value={option.id}>
-                                  {option.name} - {option.email}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </Grid>
-                          <Grid item xs={12} sm={12}>
                             <InputLabel sx={{ mb: 1 }}>Description</InputLabel>
                             <OutlinedInput
                               id="description"
@@ -663,80 +642,130 @@ const EditContact = () => {
                           </Grid>
                           <Grid item xs={12} sm={6}>
                             <InputLabel sx={{ mt: 1 }}>
-                              Contact Owner : {values?.owner_name}
+                              Contact Owner :
+                              <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{ fontWeight: 1000, fontSize: 15 }}
+                              >
+                                {" " + values?.owner_name}
+                              </Typography>
                             </InputLabel>
                           </Grid>
-                          {/* <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Create By Name
-                            </InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="created_by_name"
-                              type="text"
-                              value={values?.created_by_name}
-                              name="created_by_name"
-                              fullWidth
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Update By Name
-                            </InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="updated_by_name"
-                              type="text"
-                              value={values?.updated_by_name}
-                              name="updated_by_name"
-                              fullWidth
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>Create At</InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="created_at"
-                              type="text"
-                              value={values?.created_at
-                                ?.replace("T", " ")
-                                ?.slice(0, 19)}
-                              name="created_at"
-                              fullWidth
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>Update At</InputLabel>
-                            <TextField
-                              readOnly
-                              id="updated_at"
-                              type="text"
-                              value={values?.updated_at
-                                ?.replace("T", " ")
-                                ?.slice(0, 19)}
-                              name="updated_at"
-                              fullWidth
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>
-                              Convert From Lead Name
-                            </InputLabel>
-                            <OutlinedInput
-                              readOnly
-                              id="convert_from_lead_name"
-                              type="text"
-                              value={values?.convert_from_lead_name}
-                              name="convert_from_lead_name"
-                              fullWidth
-                            />
-                          </Grid> */}
                         </Grid>
                       </MainCard>
                     </Grid>
                     <Grid item xs={12}>
-                      <MainCard title="Address information">
+                      <MainCard title="Address Information">
                         <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <InputLabel sx={{ mb: 1 }}>Country</InputLabel>
+                            <TextField
+                              name="country"
+                              select
+                              id="country"
+                              placeholder="Select Country"
+                              fullWidth
+                              defaultValue={values?.country || "1"}
+                              variant="outlined"
+                              onChange={(e) => (
+                                setFieldValue("country", e.target.value),
+                                selectProvince(e.target.value).then(
+                                  (response) => {
+                                    return setProvinces(response.data);
+                                  }
+                                )
+                              )}
+                              // onChange={handleChange}
+                              onBlur={handleBlur}
+                            >
+                              {countries.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                  {option.name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <InputLabel sx={{ mb: 1 }}>Province</InputLabel>
+                            <TextField
+                              name="province"
+                              select
+                              id="province"
+                              placeholder="Select Province"
+                              fullWidth
+                              defaultValue={values?.province || ""}
+                              variant="outlined"
+                              onChange={(e) => (
+                                setFieldValue("province", e.target.value),
+                                selectDistrict(e.target.value).then(
+                                  (response) => {
+                                    return setDistricts(response.data);
+                                  }
+                                )
+                              )}
+                              onBlur={handleBlur}
+                            >
+                              {provinces.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                  {option.name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <InputLabel sx={{ mb: 1 }}>District</InputLabel>
+                            <TextField
+                              // disable={}
+                              name="district"
+                              select
+                              id="district"
+                              placeholder="Select District"
+                              fullWidth
+                              defaultValue={values?.district || ""}
+                              variant="outlined"
+                              // onChange={(e) => {
+                              //   console.log(e.target);
+                              //   return (
+                              //     handleChange,
+                              //     selectWard(e.target.value).then(
+                              //       (response) => {
+                              //         return setWards(response.data);
+                              //       }
+                              //     )
+                              //   );
+                              // }}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            >
+                              {districts.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                  {option.name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          {/* <Grid item xs={12} sm={6}>
+                            <InputLabel sx={{ mb: 1 }}>Ward</InputLabel>
+                            <TextField
+                              // disable={}
+                              name="ward"
+                              select
+                              id="ward"
+                              placeholder="Select Ward"
+                              fullWidth
+                              defaultValue={values?.ward}
+                              variant="outlined"
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            >
+                              {wards.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                  {option.name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid> */}
                           <Grid item xs={12} sm={6}>
                             <InputLabel sx={{ mb: 1 }}>Street</InputLabel>
                             <OutlinedInput
@@ -758,101 +787,35 @@ const EditContact = () => {
                               </FormHelperText>
                             )}
                           </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>City</InputLabel>
-                            <OutlinedInput
-                              id="city"
-                              type="text"
-                              value={values?.city}
-                              name="city"
-                              onBlur={handleBlur}
-                              onChange={handleChange}
-                              error={Boolean(touched.city && errors.city)}
-                              fullWidth
-                            />
-                            {touched.city && errors.city && (
-                              <FormHelperText
-                                error
-                                id="standard-weight-helper-text-city"
-                              >
-                                {errors.city}
-                              </FormHelperText>
-                            )}
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>Province</InputLabel>
-                            <OutlinedInput
-                              id="province"
-                              type="text"
-                              value={values?.province}
-                              name="address"
-                              onBlur={handleBlur}
-                              onChange={handleChange}
-                              error={Boolean(
-                                touched.province && errors.province
-                              )}
-                              fullWidth
-                            />
-                            {touched.province && errors.province && (
-                              <FormHelperText
-                                error
-                                id="standard-weight-helper-text-province"
-                              >
-                                {errors.province}
-                              </FormHelperText>
-                            )}
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <InputLabel sx={{ mb: 1 }}>Country</InputLabel>
-                            <OutlinedInput
-                              id="country"
-                              type="text"
-                              value={values?.country}
-                              name="country"
-                              onBlur={handleBlur}
-                              onChange={handleChange}
-                              error={Boolean(touched.country && errors.country)}
-                              fullWidth
-                            />
-                            {touched.country && errors.country && (
-                              <FormHelperText
-                                error
-                                id="standard-weight-helper-text-country"
-                              >
-                                {errors.country}
-                              </FormHelperText>
-                            )}
-                          </Grid>
                         </Grid>
                       </MainCard>
                     </Grid>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack
-                      direction="row"
-                      justifyContent="center"
-                      alignItems="center"
-                      spacing={2}
-                      sx={{ mt: 6 }}
-                    >
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        onClick={handleCancel}
+                    <Grid item xs={12}>
+                      <Stack
+                        direction="row"
+                        justifyContent="right"
+                        alignItems="center"
+                        spacing={2}
+                        sx={{ mt: 2 }}
                       >
-                        Cancel
-                      </Button>
-                      <Button
-                        sx={{ textTransform: "none" }}
-                        disableElevation
-                        disabled={isSubmitting}
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                      >
-                        Update
-                      </Button>
-                    </Stack>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          onClick={handleCancel}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          sx={{ textTransform: "none" }}
+                          disableElevation
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                        >
+                          Updated
+                        </Button>
+                      </Stack>
+                    </Grid>
                   </Grid>
                 </MainCard>
               )}
