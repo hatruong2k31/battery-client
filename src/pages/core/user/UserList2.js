@@ -122,7 +122,7 @@ function ReactTable({
     if (matchDownSM) {
       setHiddenColumns(["email"]);
     } else {
-      setHiddenColumns(["email"]);
+      setHiddenColumns([]);
     }
   }, []);
 

@@ -22,7 +22,6 @@ import { Formik } from "formik";
 import MainCard from "../../../components/MainCard";
 import AnimateButton from "../../../components/@extended/AnimateButton";
 import { get, put } from "../../../utils/request";
-import { roleSelect, profileSelect } from "../../../utils/selectRequest";
 import { openSnackbar } from "../../../store/reducers/snackbar";
 import { useDispatch } from "../../../store";
 // assets
@@ -33,12 +32,10 @@ const EditUser = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleCancel = () => {
-    navigate(`/`);
+    navigate(`/user/list`);
   };
   // const [authState, authDispatch] = useAuth();
   const { id } = useParams();
-  const [roles, setRoles] = useState([]);
-  const [profiles, setProfiles] = useState([]);
   const [user, setUser] = useState({});
 
   useEffect(() => {

@@ -14,24 +14,25 @@ const UserList = Loadable(lazy(() => import("../pages/core/user/UserList")));
 const EditUser = Loadable(lazy(() => import("../pages/core/user/EditUser")));
 const ViewUser = Loadable(lazy(() => import("../pages/core/user/ViewUser")));
 
+// Payment
+const PaymentList = Loadable(
+  lazy(() => import("../pages/core/payment/PaymentList"))
+);
+const CreatePayment = Loadable(
+  lazy(() => import("../pages/core/payment/CreatePayment"))
+);
+const EditPayment = Loadable(
+  lazy(() => import("../pages/core/payment/EditPayment"))
+);
+const ViewPayment = Loadable(
+  lazy(() => import("../pages/core/payment/ViewPayment"))
+);
+
 //Station
 // const StationList = Loadable(lazy(() => import("../pages/core/station/List")));
 // const CreateStation = Loadable(lazy(() => import("../pages/core/station/Add")));
 // const EditStation = Loadable(lazy(() => import("../pages/core/station/Edit")));
 
-//Payment
-// const PaymentList = Loadable(
-//   lazy(() => import("../pages/core/payment/PaymentList"))
-// );
-// const CreatePayment = Loadable(
-//   lazy(() => import("../pages/core/payment/CreatePayment"))
-// );
-// const EditPayment = Loadable(
-//   lazy(() => import("../pages/core/payment/EditPayment"))
-// );
-// const ViewPayment = Loadable(
-//   lazy(() => import("../pages/core/payment/ViewPayment"))
-// );
 //Battery
 // const BatteryList = Loadable(lazy(() => import("../pages/core/battery/List")));
 // const CreateBattery = Loadable(
@@ -70,27 +71,27 @@ const CoreRoutes = {
         },
       ],
     },
-    // {
-    //   path: "/payment",
-    //   children: [
-    //     {
-    //       path: "list",
-    //       element: <PaymentList />,
-    //     },
-    //     {
-    //       path: "create",
-    //       element: <CreatePayment />,
-    //     },
-    //     {
-    //       path: "edit/:id",
-    //       element: <EditPayment />,
-    //     },
-    //     {
-    //       path: "view/:id",
-    //       element: <ViewPayment />,
-    //     },
-    //   ],
-    // },
+    {
+      path: "/payment",
+      children: [
+        {
+          path: "list",
+          element: <PaymentList />,
+        },
+        {
+          path: "create",
+          element: <CreatePayment />,
+        },
+        {
+          path: "edit/:id",
+          element: <EditPayment />,
+        },
+        {
+          path: "view/:id",
+          element: <ViewPayment />,
+        },
+      ],
+    },
     // {
     //   path: "/battery",
     //   children: [

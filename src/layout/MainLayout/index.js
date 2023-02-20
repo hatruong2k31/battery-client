@@ -57,8 +57,7 @@ const MainLayout = () => {
         <Breadcrumbs
           navigation={navigation}
           title
-          titleBottom
-          card={false}
+          card={null}
           divider={false}
         />
         <Outlet />

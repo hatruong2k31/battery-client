@@ -18,49 +18,35 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 // project imports
 import MainCard from "../../../components/MainCard";
 import { useDispatch, useSelector } from "../../../store";
-import { getPayment } from "../../../store/reducers/payment";
-import { getGenders } from "../../../store/reducers/masterData";
+import { getUser } from "../../../store/reducers/user";
 // import { openSnackbar } from "../../../store/reducers/snackbar";
-import { selectProvince, selectDistrict } from "../../../utils/selectRequest";
-import { del } from "../../../utils/request";
+import { get, put, del } from "../../../utils/request";
 
-const ViewContact = () => {
+const ViewUser = () => {
   const history = useNavigate();
   const { id } = useParams();
-  const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const countries = [{ id: "01", name: "Việt Nam" }];
-  const { genders } = useSelector((state) => state.masterData);
-  const { contact } = useSelector((state) => state.contact);
-  const dispatch = useDispatch();
+  const [user, setUser] = useState({});
 
   useEffect(() => {
-    dispatch(getGenders());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(getPayment(id));
-  }, [id, dispatch]);
-
-  useEffect(() => {
-    if (contact && contact.id === Number(id)) {
-      selectProvince(contact.country).then((response) =>
-        setProvinces(response.data)
-      );
-      selectDistrict(contact.province).then((response) =>
-        setDistricts(response.data)
-      );
-    }
-  }, [contact]);
+    get(`/api/user/${id}`)
+      .then((response) => {
+        if (response.status === 200) {
+          return setUser(response.data);
+        }
+      })
+      .catch((error) => {
+        return error;
+      });
+  }, [id]);
 
   const handleCancel = () => {
-    history(`/contact/list`);
+    history(`/user/list`);
   };
 
   return (
     <>
-      {contact && contact.id === Number(id) && (
-        <MainCard title="View Contact">
+      {user && user.id === Number(id) && (
+        <MainCard title="View User">
           <Stack
             direction="row"
             justifyContent="flex-end"
@@ -70,14 +56,14 @@ const ViewContact = () => {
           ></Stack>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <MainCard title="Contact information">
+              <MainCard title="User information">
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
                     <InputLabel sx={{ mb: 1 }}>First Name</InputLabel>
                     <OutlinedInput
                       id="firstname"
                       type="text"
-                      value={contact.firstname}
+                      value={user?.firstname}
                       name="firstname"
                       fullWidth
                       readOnly
@@ -88,7 +74,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="middlename"
                       type="text"
-                      value={contact.middlename}
+                      value={user?.middlename}
                       name="middlename"
                       fullWidth
                       readOnly
@@ -108,7 +94,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="lastname"
                       type="text"
-                      value={contact.lastname}
+                      value={user?.lastname}
                       name="lastname"
                       fullWidth
                       readOnly
@@ -128,7 +114,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="identity_card"
                       type="text"
-                      value={contact.identity_card}
+                      value={user?.identity_card}
                       name="identity_card"
                       fullWidth
                       readOnly
@@ -141,7 +127,7 @@ const ViewContact = () => {
                         <DatePicker
                           readOnly
                           id="birthdate"
-                          value={contact.birthdate}
+                          value={user?.birthdate}
                           name="birthdate"
                           closeOnSelect
                           inputFormat="DD/MM/YYYY"
@@ -151,24 +137,6 @@ const ViewContact = () => {
                         />
                       </Stack>
                     </LocalizationProvider>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Gender</InputLabel>
-                    <TextField
-                      name="gender"
-                      select
-                      id="gender"
-                      placeholder="Select Gender"
-                      fullWidth
-                      defaultValue={contact.gender || ""}
-                      inputProps={{ readOnly: true }}
-                    >
-                      {genders.map((option) => (
-                        <MenuItem key={option.id} value={option.code}>
-                          {option.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <InputLabel sx={{ mb: 1 }}>
@@ -184,7 +152,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="mobile_phone"
                       type="text"
-                      value={contact.mobile_phone}
+                      value={user?.mobile_phone}
                       name="mobile_phone"
                       fullWidth
                       readOnly
@@ -195,7 +163,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="phone"
                       type="text"
-                      value={contact.phone}
+                      value={user?.phone}
                       name="phone"
                       fullWidth
                       readOnly
@@ -206,7 +174,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="homephone"
                       type="text"
-                      value={contact.homephone}
+                      value={user?.homephone}
                       name="homephone"
                       fullWidth
                       readOnly
@@ -226,7 +194,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="email"
                       type="text"
-                      value={contact.email}
+                      value={user?.email}
                       name="email"
                       fullWidth
                       readOnly
@@ -237,7 +205,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="title"
                       type="text"
-                      value={contact.title}
+                      value={user?.title}
                       name="title"
                       fullWidth
                       readOnly
@@ -248,7 +216,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="department"
                       type="text"
-                      value={contact.department}
+                      value={user?.department}
                       name="department"
                       fullWidth
                       readOnly
@@ -271,7 +239,7 @@ const ViewContact = () => {
                     <OutlinedInput
                       id="description"
                       type="text"
-                      value={contact.description}
+                      value={user?.description}
                       name="description"
                       rows={2}
                       multiline
@@ -282,7 +250,7 @@ const ViewContact = () => {
                   <Grid item xs={12} sm={6}>
                     <FormControlLabel
                       control={
-                        contact.donotcall ? (
+                        user?.donotcall ? (
                           <Checkbox defaultChecked value={true} />
                         ) : (
                           <Checkbox value={true} />
@@ -294,13 +262,13 @@ const ViewContact = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <InputLabel sx={{ mt: 1 }}>
-                      Contact Owner :
+                      User Owner :
                       <Typography
                         component="span"
                         variant="caption"
                         sx={{ fontWeight: 1000, fontSize: 15 }}
                       >
-                        {" " + contact.owner_name}
+                        {" " + user?.owner_name}
                       </Typography>
                     </InputLabel>
                   </Grid>
@@ -309,76 +277,7 @@ const ViewContact = () => {
             </Grid>
             <Grid item xs={12}>
               <MainCard title="Address information">
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Country</InputLabel>
-                    <TextField
-                      name="country"
-                      select
-                      id="country"
-                      placeholder="Select Country"
-                      fullWidth
-                      inputProps={{ readOnly: true }}
-                      defaultValue={contact.country || "1"}
-                      variant="outlined"
-                    >
-                      {countries.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Province</InputLabel>
-                    <TextField
-                      name="province"
-                      select
-                      id="province"
-                      placeholder="Select Province"
-                      fullWidth
-                      inputProps={{ readOnly: true }}
-                      defaultValue={contact.province || ""}
-                      variant="outlined"
-                    >
-                      {provinces.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>District</InputLabel>
-                    <TextField
-                      name="district"
-                      select
-                      id="district"
-                      placeholder="Select District"
-                      fullWidth
-                      inputProps={{ readOnly: true }}
-                      defaultValue={contact.district || ""}
-                      variant="outlined"
-                    >
-                      {districts.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Street</InputLabel>
-                    <OutlinedInput
-                      id="street"
-                      type="text"
-                      value={contact.street}
-                      name="street"
-                      fullWidth
-                      readOnly
-                    />
-                  </Grid>
-                </Grid>
+                <Grid container spacing={2}></Grid>
               </MainCard>
             </Grid>
             <Grid item xs={12}>
@@ -399,7 +298,7 @@ const ViewContact = () => {
                 <Button
                   variant="contained"
                   onClick={() => {
-                    history(`/contact/edit/${contact.id}`);
+                    history(`/user/edit/${user.id}`);
                   }}
                 >
                   Edit
@@ -413,4 +312,4 @@ const ViewContact = () => {
   );
 };
 
-export default ViewContact;
+export default ViewUser;

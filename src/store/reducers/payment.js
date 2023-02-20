@@ -78,7 +78,7 @@ export function getPayments() {
 
       const response = await axios.get(`/api/payment/list?${query}`, header);
 
-      dispatch(slice.actions.getPaymentsSuccess(response.data.data.data));
+      dispatch(slice.actions.getPaymentsSuccess(response.data.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -106,7 +106,7 @@ export function getPayment(id) {
         },
       };
 
-      const response = await axios.get(`/api/payment/detail/${id}`, header);
+      const response = await axios.get(`/api/payment/${id}`, header);
 
       dispatch(slice.actions.getPaymentSuccess(response.data.data[0]));
     } catch (error) {

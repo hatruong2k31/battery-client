@@ -37,11 +37,6 @@ const slice = createSlice({
     getUsersuccess(state, action) {
       state.user = action.payload;
     },
-
-    // GET RELATED users
-    getRelatedSuccess(state, action) {
-      state.related = action.payload;
-    },
   },
 });
 
@@ -101,19 +96,8 @@ export function getUser(id) {
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(`/api/user/detail/${id}`, header);
+      const response = await axios.get(`/api/user/${id}`, header);
       dispatch(slice.actions.getUsersuccess(response.data));
-    } catch (error) {
-      dispatch(slice.actions.hasError(error));
-    }
-  };
-}
-
-export function getRelated(id) {
-  return async () => {
-    try {
-      const response = await axios.post("/api/product/related", { id });
-      dispatch(slice.actions.getRelatedSuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

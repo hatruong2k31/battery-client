@@ -1,11 +1,9 @@
 import PropTypes from "prop-types";
-import { useCallback, useEffect, useMemo, Fragment, useState } from "react";
+import { useCallback, useEffect, useMemo, Fragment } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 // material-ui
 import { useTheme } from "@mui/material/styles";
-import { Delete, Edit } from "@mui/icons-material";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   useMediaQuery,
   Button,
@@ -18,6 +16,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { Delete, Edit } from "@mui/icons-material";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 
 import {
   useFilters,
@@ -31,7 +31,7 @@ import {
 import Swal from "sweetalert2";
 
 // project import
-import ViewUser from "./ViewUser";
+import ViewPayment from "./ViewPayment";
 import MainCard from "../../../components/MainCard";
 import ScrollX from "../../../components/ScrollX";
 import { renderFilterTypes, GlobalFilter } from "../../../utils/react-table";
@@ -39,13 +39,11 @@ import {
   HeaderSort,
   TablePagination,
   TableRowSelection,
-  SortingSelect,
 } from "../../../components/third-party/ReactTable";
 import { useDispatch, useSelector } from "../../../store";
-import { getUsers } from "../../../store/reducers/user";
+import { getPayments } from "../../../store/reducers/payment";
 import { openSnackbar } from "../../../store/reducers/snackbar";
-import { del, get } from "../../../utils/request";
-
+import { del } from "../../../utils/request";
 // assets
 import { PlusOutlined } from "@ant-design/icons";
 
@@ -105,7 +103,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
 
   useEffect(() => {
     if (matchDownSM) {
-      setHiddenColumns(["phone", "email"]);
+      setHiddenColumns(["company", "mobile", "phone", "email"]);
     } else {
       setHiddenColumns([]);
     }
@@ -114,8 +112,8 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
 
   const history = useNavigate();
 
-  const handleAddUser = () => {
-    history(`/user/create`);
+  const handleAddPayment = () => {
+    history(`/payment/add-new-payment`);
   };
 
   return (
@@ -134,18 +132,13 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
             setGlobalFilter={setGlobalFilter}
             size="small"
           />
-          <SortingSelect
-            sortBy={sortBy.id}
-            setSortBy={setSortBy}
-            allColumns={allColumns}
-          />
           <Stack direction="row" alignItems="center" spacing={1}>
             <Button
               variant="contained"
               startIcon={<PlusOutlined />}
-              onClick={handleAddUser}
+              onClick={handleAddPayment}
             >
-              Add User
+              Add Payment
             </Button>
           </Stack>
         </Stack>
@@ -180,10 +173,9 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
               return (
                 <Fragment key={i}>
                   <TableRow
-                    hover
                     {...row.getRowProps()}
                     onClick={() => {
-                      history(`/user/view/${row.values.id}`);
+                      history(`/payment/view/${row.values.id}`);
                     }}
                   >
                     {row.cells.map((cell, index) => (
@@ -211,7 +203,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
                       sx={{ color: `error.main` }}
                       justifyContent="center"
                     >
-                      No Users!
+                      No data!
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -247,6 +239,7 @@ ReactTable.propTypes = {
 const CellActions = ({ row }) => {
   const dispatch = useDispatch();
   const { values } = row;
+  const { payments } = useSelector((state) => state.payment);
 
   const deleteSwal = (name) =>
     Swal.fire({
@@ -259,7 +252,7 @@ const CellActions = ({ row }) => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        del(`/api/user/${values.id}`).then((response) => {
+        del(`/api/payment/${values.id}`).then((response) => {
           if (response.status === 200) {
             dispatch(
               openSnackbar({
@@ -272,12 +265,14 @@ const CellActions = ({ row }) => {
                 close: false,
               })
             );
-            // dispatch(getUsers());
+            dispatch(getPayments());
           } else {
             dispatch(
               openSnackbar({
                 open: true,
-                message: `${values.name} deleted Error! ${response?.message}`,
+                message: response.details
+                  ? `During ${values.name} qualification process. You can not delete this record!`
+                  : response?.message,
                 variant: "alert",
                 alert: {
                   color: "error",
@@ -301,12 +296,12 @@ const CellActions = ({ row }) => {
       spacing={2}
     >
       <Tooltip title="View">
-        <Link to={{ pathname: `/user/view/${values.id}` }}>
+        <Link to={{ pathname: `/payment/view/${values.id}` }}>
           <RemoveRedEyeIcon style={{ color: "green" }} />
         </Link>
       </Tooltip>
       <Tooltip title="Edit">
-        <Link to={{ pathname: `/user/edit/${values.id}` }}>
+        <Link to={{ pathname: `/payment/edit/${values.id}` }}>
           <Edit style={{ color: "#1890ff" }} />
         </Link>
       </Tooltip>
@@ -323,55 +318,38 @@ CellActions.propTypes = {
   row: PropTypes.object,
 };
 
-const BBBList = () => {
+const PaymentList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  // const { users } = useSelector((state) => state.user);
-  const [users, setUsers] = useState([]);
+
+  const { payments } = useSelector((state) => state.payment);
 
   useEffect(() => {
-    get(`/api/user/list`)
-      .then((response) => {
-        if (response.status === 200) {
-          return setUsers(response.data);
-        }
-      })
-      .catch((error) => {
-        return error;
-      });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    dispatch(getPayments());
   }, []);
 
   const columns = useMemo(
     () => [
       {
-        Header: "ID",
+        Header: "#",
         accessor: "id",
         className: "cell-center",
       },
       {
-        Header: "Name",
-        accessor: "username",
+        Header: "User Name",
+        accessor: "user_id",
       },
       {
-        Header: "Email",
-        accessor: "email",
+        Header: "Battery Name",
+        accessor: "battery_id",
       },
       {
-        Header: "Card ID",
-        accessor: "card_id",
-      },
-      {
-        Header: "Balance",
-        accessor: "balance",
-      },
-      {
-        Header: "Provider",
-        accessor: "provider",
+        Header: "Station Name",
+        accessor: "station_id",
       },
       {
         Header: "Actions",
+        className: "cell-center",
         disableSortBy: true,
         Cell: CellActions,
       },
@@ -381,8 +359,8 @@ const BBBList = () => {
   );
 
   const renderRowSubComponent = useCallback(
-    ({ row }) => <ViewUser data={users[row.id]} />,
-    [users]
+    ({ row }) => <ViewPayment data={payments[row.id]} />,
+    [payments]
   );
 
   return (
@@ -390,7 +368,7 @@ const BBBList = () => {
       <ScrollX>
         <ReactTable
           columns={columns}
-          data={users}
+          data={payments}
           getHeaderProps={(column) => column.getSortByToggleProps()}
           renderRowSubComponent={renderRowSubComponent}
         />
@@ -398,4 +376,5 @@ const BBBList = () => {
     </MainCard>
   );
 };
-export default BBBList;
+
+export default PaymentList;
