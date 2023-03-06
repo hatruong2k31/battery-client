@@ -45,7 +45,7 @@ const GoogleProvider = () => {
       }}
     >
       <Button
-        href={`${SERVER.localhost}/api/connect/google`}
+        href={`${SERVER.host}/api/connect/google`}
         variant="outlined"
         color="secondary"
         fullWidth={!matchDownSM}

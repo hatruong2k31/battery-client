@@ -14,8 +14,14 @@ import {
   Link,
   GlobalStyles,
   Container,
+  ImageListItem,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import StarIcon from "@mui/icons-material/StarBorder";
+import Logo from "../../../components/Logo/Logo";
+import { logout } from "../../../store/reducers/actions";
+import useAuth from "../../../hooks/useAuth";
+import { useState } from "react";
 
 function Copyright(props) {
   return (
@@ -26,8 +32,8 @@ function Copyright(props) {
       {...props}
     >
       {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
+      <Link color="inherit" href="http://localhost:3000/">
+        Battery-Client
       </Link>{" "}
       {new Date().getFullYear()}
       {"."}
@@ -37,39 +43,24 @@ function Copyright(props) {
 
 const tiers = [
   {
-    title: "Free",
-    price: "0",
-    description: [
-      "10 users included",
-      "2 GB of storage",
-      "Help center access",
-      "Email support",
-    ],
-    buttonText: "Sign up for free",
+    title: "Monthly",
+    price: "300.000 vnd/month",
+    description: ["reasonable choice", "", ""],
+    buttonText: "Contact us",
     buttonVariant: "outlined",
   },
   {
-    title: "Pro",
+    title: "Annual",
     subheader: "Most popular",
-    price: "15",
-    description: [
-      "20 users included",
-      "10 GB of storage",
-      "Help center access",
-      "Priority email support",
-    ],
-    buttonText: "Get started",
+    price: "3.000.000 vnd/year",
+    description: ["save money", "", ""],
+    buttonText: "Rent now",
     buttonVariant: "contained",
   },
   {
-    title: "Enterprise",
-    price: "30",
-    description: [
-      "50 users included",
-      "30 GB of storage",
-      "Help center access",
-      "Phone & email support",
-    ],
+    title: "weekly",
+    price: "100.000 vnd/week",
+    description: ["a short term option"],
     buttonText: "Contact us",
     buttonVariant: "outlined",
   },
@@ -106,6 +97,15 @@ const footers = [
 ];
 
 function PricingContent() {
+  const navigate = useNavigate();
+  const [authState, authDispatch] = useAuth();
+  // let isLogin = localStorage.getItem("isLogin");
+  const [isLogin, setIsLogin] = useState(localStorage.getItem("isLogin"));
+  let handleLogout = () => {
+    setIsLogin(false);
+    authDispatch(logout());
+    navigate("/login");
+  };
   return (
     <React.Fragment>
       <GlobalStyles
@@ -119,9 +119,18 @@ function PricingContent() {
         sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
       >
         <Toolbar sx={{ flexWrap: "wrap" }}>
-          <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-            Company name
+          <Typography
+            onClick={() => {
+              navigate("/dashboard/default");
+            }}
+            variant="h6"
+            color="inherit"
+            noWrap
+            sx={{ cursor: "pointer", flexGrow: 1 }}
+          >
+            <Logo sx={{ flexGrow: 1 }} />
           </Typography>
+
           <nav>
             <Link
               variant="button"
@@ -137,18 +146,23 @@ function PricingContent() {
               href="#"
               sx={{ my: 1, mx: 1.5 }}
             >
-              Enterprise
-            </Link>
-            <Link
-              variant="button"
-              color="text.primary"
-              href="#"
-              sx={{ my: 1, mx: 1.5 }}
-            >
               Support
             </Link>
           </nav>
-          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+          {/* {isLogin ? (
+            <Button
+              onClick={handleLogout}
+              variant="outlined"
+              sx={{ my: 1, mx: 1.5 }}
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button variant="outlined" href="/login" sx={{ my: 1, mx: 1.5 }}>
+              Login
+            </Button>
+          )} */}
+          <Button variant="outlined" href="/login" sx={{ my: 1, mx: 1.5 }}>
             Login
           </Button>
         </Toolbar>
@@ -160,6 +174,14 @@ function PricingContent() {
         component="main"
         sx={{ pt: 8, pb: 6 }}
       >
+        <img
+          src="https://assets.newatlas.com/dims4/default/79d9e7c/2147483647/strip/true/crop/1345x700+0+0/resize/1345x700!/quality/90/?url=http%3A%2F%2Fnewatlas-brightspot.s3.amazonaws.com%2Fc7%2Fca%2F6341cf594514806a4760cc473f9e%2Fhero.jpg"
+          alt="Workplace"
+          usemap="#workmap"
+          align="center"
+          width="800"
+          height="400"
+        />
         <Typography
           component="h1"
           variant="h2"
@@ -175,9 +197,7 @@ function PricingContent() {
           color="text.secondary"
           component="p"
         >
-          Quickly build an effective pricing table for your potential customers
-          with this layout. It&apos;s built with default MUI components with
-          little customization.
+          Below is our battery price list
         </Typography>
       </Container>
       {/* End hero unit */}
@@ -222,10 +242,7 @@ function PricingContent() {
                       variant="h3"
                       color="text.primary"
                     >
-                      ${tier.price}
-                    </Typography>
-                    <Typography variant="h6" color="text.secondary">
-                      /mo
+                      {tier.price}
                     </Typography>
                   </Box>
                   <ul>

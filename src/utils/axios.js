@@ -1,7 +1,7 @@
 import axios from "axios";
 import { SERVER } from "../config";
 const axiosServices = axios.create({
-  baseURL: SERVER.localhost,
+  baseURL: SERVER.host,
   headers: { "Content-Type": "application/json" },
 });
 

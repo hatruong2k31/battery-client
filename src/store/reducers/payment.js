@@ -66,7 +66,7 @@ export function getPayments() {
           pagination: { isPage: false },
           filters: {
             is_delete: {
-              $eq: false,
+              $eq: 0,
             },
           },
           sort: [{ column: "updated_at", order: "desc" }],
@@ -77,7 +77,6 @@ export function getPayments() {
       );
 
       const response = await axios.get(`/api/payment/list?${query}`, header);
-
       dispatch(slice.actions.getPaymentsSuccess(response.data.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));

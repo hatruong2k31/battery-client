@@ -4,7 +4,8 @@ import { lazy } from "react";
 import Loadable from "../components/Loadable";
 import MainLayout from "../layout/MainLayout";
 import { PrivateRoutes } from "./PrivateRouterWrapper";
-
+import { UserProvider } from "../contexts/UserContext";
+import { PaymentProvider } from "../contexts/PaymentContext";
 // render - core
 //User
 const CreateUser = Loadable(
@@ -55,7 +56,11 @@ const CoreRoutes = {
       children: [
         {
           path: "list",
-          element: <UserList />,
+          element: (
+            <UserProvider>
+              <UserList />
+            </UserProvider>
+          ),
         },
         {
           path: "create",
@@ -76,7 +81,11 @@ const CoreRoutes = {
       children: [
         {
           path: "list",
-          element: <PaymentList />,
+          element: (
+            <PaymentProvider>
+              <PaymentList />
+            </PaymentProvider>
+          ),
         },
         {
           path: "create",

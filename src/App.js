@@ -6,7 +6,6 @@ import Snackbar from "./components/@extended/Snackbar";
 import ScrollTop from "./components/ScrollTop";
 import React from "react";
 import { JWTProvider } from "./contexts/JWTContext";
-
 // ==============================|| APP - THEME, ROUTER, LOCAL  ||============================== //
 
 const App = () => {

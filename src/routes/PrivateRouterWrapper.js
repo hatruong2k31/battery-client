@@ -48,7 +48,7 @@ const AuthRoutes = ({ children }) => {
       })
     );
   }
-  return isLogin ? <Navigate to="/" /> : children;
+  return isLogin ? <Navigate to="/dashboard/default" /> : children;
 };
 
 export { AuthRoutes, PrivateRoutes };

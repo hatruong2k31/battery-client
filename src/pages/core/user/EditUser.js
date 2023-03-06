@@ -23,7 +23,9 @@ import MainCard from "../../../components/MainCard";
 import AnimateButton from "../../../components/@extended/AnimateButton";
 import { get, put } from "../../../utils/request";
 import { openSnackbar } from "../../../store/reducers/snackbar";
-import { useDispatch } from "../../../store";
+import { useDispatch, useSelector } from "../../../store";
+import { getUser } from "../../../store/reducers/user";
+
 // assets
 
 // ==============================|| ADD NEW PRODUCT - MAIN ||============================== //
@@ -36,6 +38,7 @@ const EditUser = () => {
   };
   // const [authState, authDispatch] = useAuth();
   const { id } = useParams();
+  // const { user } = useSelector((state) => state.user);
   const [user, setUser] = useState({});
 
   useEffect(() => {
@@ -48,10 +51,12 @@ const EditUser = () => {
       .catch((error) => {
         return error;
       });
+    // dispatch(getUser(id));
   }, [id]);
 
   return (
     <>
+      {/* {user && user.id === Number(id) && ( */}
       <Formik
         initialValues={{ ...user }}
         enableReinitialize
@@ -74,11 +79,10 @@ const EditUser = () => {
             .max(12, "No more than 20 characters")
             .nullable(),
           balance: Yup.number().nullable(),
-          address: Yup.string().max(255).nullable(),
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
-            put(`api/user/${id}`, values)
+            await put(`api/user/${id}`, values)
               .then(function (response) {
                 if (response.status === 200) {
                   return (
@@ -139,10 +143,10 @@ const EditUser = () => {
           values,
         }) => (
           <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={2}>
+            <MainCard title="Edit Profile">
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <MainCard title="Edit Profile">
+                  <MainCard title="User information">
                     <Grid container spacing={3}>
                       <Grid item xs={12} sm={6}>
                         <InputLabel sx={{ mb: 1 }}>
@@ -229,7 +233,7 @@ const EditUser = () => {
                         )}
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>Identity</InputLabel>
+                        <InputLabel sx={{ mb: 1 }}>Identity Card</InputLabel>
                         <OutlinedInput
                           id="identity_card"
                           type="text"
@@ -253,7 +257,7 @@ const EditUser = () => {
                         )}
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>Card ID</InputLabel>
+                        <InputLabel sx={{ mb: 1 }}>RFID</InputLabel>
                         <OutlinedInput
                           id="card_id"
                           type="text"
@@ -271,6 +275,28 @@ const EditUser = () => {
                             id="standard-weight-helper-text-card_id"
                           >
                             {errors.card_id}
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputLabel sx={{ mb: 1 }}>Provicer</InputLabel>
+                        <OutlinedInput
+                          id="provider"
+                          type="text"
+                          value={values.provider}
+                          name="provider"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="Enter your Identity"
+                          fullWidth
+                          error={Boolean(touched.provider && errors.provider)}
+                        />
+                        {touched.provider && errors.provider && (
+                          <FormHelperText
+                            error
+                            id="standard-weight-helper-text-provider"
+                          >
+                            {errors.provider}
                           </FormHelperText>
                         )}
                       </Grid>
@@ -296,71 +322,49 @@ const EditUser = () => {
                           </FormHelperText>
                         )}
                       </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <InputLabel sx={{ mb: 1 }}>Address</InputLabel>
-                        <OutlinedInput
-                          id="address"
-                          type="text"
-                          value={values.address}
-                          name="address"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="Enter your address"
-                          fullWidth
-                          error={Boolean(touched.address && errors.address)}
-                        />
-                        {touched.address && errors.address && (
-                          <FormHelperText
-                            error
-                            id="standard-weight-helper-text-address"
-                          >
-                            {errors.address}
-                          </FormHelperText>
-                        )}
-                      </Grid>
                     </Grid>
                   </MainCard>
                 </Grid>
               </Grid>
-              {errors.submit && (
-                <Grid item xs={12}>
-                  <FormHelperText error>{errors.submit}</FormHelperText>
-                </Grid>
-              )}
-
+            </MainCard>
+            {errors.submit && (
               <Grid item xs={12}>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  alignItems="center"
-                  sx={{ mt: 6 }}
-                >
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </Button>
-                  <AnimateButton>
-                    <Button
-                      sx={{ textTransform: "none" }}
-                      disableElevation
-                      fullWidth
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                    >
-                      Confirm
-                    </Button>
-                  </AnimateButton>
-                </Stack>
+                <FormHelperText error>{errors.submit}</FormHelperText>
               </Grid>
+            )}
+            <Grid item xs={12}>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ mt: 6 }}
+              >
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
+                <AnimateButton>
+                  <Button
+                    sx={{ textTransform: "none" }}
+                    disableElevation
+                    fullWidth
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                  >
+                    Update
+                  </Button>
+                </AnimateButton>
+              </Stack>
             </Grid>
           </form>
         )}
       </Formik>
+      {/* )} */}
     </>
   );
 };

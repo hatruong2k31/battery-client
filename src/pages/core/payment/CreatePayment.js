@@ -25,14 +25,6 @@ import { openSnackbar } from "../../../store/reducers/snackbar";
 import useAuth from "../../../hooks/useAuth";
 
 import {
-  getDecisionTimeframes,
-  getLeadSources,
-  getLeadStatuss,
-  getProductInterests,
-  getIndustries,
-  getEmployees,
-} from "../../../store/reducers/masterData";
-import {
   selectProvince,
   selectDistrict,
   // selectWard,
@@ -47,24 +39,6 @@ function AddNewLead() {
   const countries = [{ id: "01", name: "Việt Nam" }];
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
-
-  const {
-    employees,
-    industries,
-    decisionTimeframes,
-    productInterests,
-    leadSources,
-    leadStatuss,
-  } = useSelector((state) => state.masterData);
-
-  useEffect(() => {
-    dispatch(getDecisionTimeframes());
-    dispatch(getIndustries());
-    dispatch(getEmployees());
-    dispatch(getLeadSources());
-    dispatch(getLeadStatuss());
-    dispatch(getProductInterests());
-  }, [dispatch]);
 
   useEffect(() => {
     selectProvince().then((response) => {
@@ -511,140 +485,7 @@ function AddNewLead() {
                             </FormHelperText>
                           )}
                         </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <InputLabel
-                            sx={{ mb: 1 }}
-                            htmlFor="number_of_employees"
-                          >
-                            Employees
-                          </InputLabel>
-                          <TextField
-                            placeholder="Choose Employees"
-                            fullWidth
-                            select
-                            id="number_of_employees"
-                            name="number_of_employees"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            defaultValue={values?.number_of_employees || ""}
-                          >
-                            {employees.map((option) => (
-                              <MenuItem key={option.id} value={option.code}>
-                                {option.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                          {touched.number_of_employees &&
-                            errors.number_of_employees && (
-                              <FormHelperText
-                                error
-                                id="standard-weight-helper-text-number_of_employees"
-                              >
-                                {errors.number_of_employees}
-                              </FormHelperText>
-                            )}
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <InputLabel sx={{ mb: 1 }} htmlFor="industry">
-                            Industry
-                          </InputLabel>
-                          <TextField
-                            placeholder="Choose industry"
-                            fullWidth
-                            select
-                            id="industry"
-                            name="industry"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            defaultValue={values?.industry || ""}
-                          >
-                            {industries.map((option) => (
-                              <MenuItem key={option.id} value={option.code}>
-                                {option.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <InputLabel sx={{ mb: 1 }} htmlFor="lead_source">
-                            Lead Source
-                            <Typography
-                              component="span"
-                              variant="caption"
-                              sx={{ color: `error.main` }}
-                            >
-                              *
-                            </Typography>
-                          </InputLabel>
-                          <TextField
-                            placeholder="Choose Source"
-                            fullWidth
-                            variant="outlined"
-                            select
-                            id="lead_source"
-                            name="lead_source"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            defaultValue={values?.lead_source || ""}
-                            error={Boolean(
-                              touched.lead_source && errors.lead_source
-                            )}
-                          >
-                            {leadSources.map((option) => (
-                              <MenuItem key={option.id} value={option.code}>
-                                {option.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                          {touched.lead_source && errors.lead_source && (
-                            <FormHelperText
-                              error
-                              id="standard-weight-helper-text-lead_source"
-                            >
-                              {errors.lead_source}
-                            </FormHelperText>
-                          )}
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <InputLabel sx={{ mb: 1 }} htmlFor="lead_status">
-                            Lead Status
-                            <Typography
-                              component="span"
-                              variant="caption"
-                              sx={{ color: `error.main` }}
-                            >
-                              *
-                            </Typography>
-                          </InputLabel>
-                          <TextField
-                            placeholder="Choose Status"
-                            fullWidth
-                            select
-                            variant="outlined"
-                            id="lead_status"
-                            name="lead_status"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            defaultValue={values?.lead_status || ""}
-                            error={Boolean(
-                              touched.lead_status && errors.lead_status
-                            )}
-                          >
-                            {leadStatuss.map((option) => (
-                              <MenuItem key={option.id} value={option.code}>
-                                {option.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                          {touched.lead_status && errors.lead_status && (
-                            <FormHelperText
-                              error
-                              id="standard-weight-helper-text-lead_status"
-                            >
-                              {errors.lead_status}
-                            </FormHelperText>
-                          )}
-                        </Grid>
+
                         <Grid item xs={12} sm={12}>
                           <InputLabel sx={{ mb: 1 }}>Description</InputLabel>
                           <OutlinedInput
@@ -819,51 +660,6 @@ function AddNewLead() {
                   <Grid item xs={12}>
                     <MainCard title="Other Information">
                       <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <InputLabel sx={{ mb: 1 }} htmlFor="product_interest">
-                            Product Interest
-                          </InputLabel>
-                          <TextField
-                            placeholder="Choose Product Interest"
-                            fullWidth
-                            select
-                            id="product_interest"
-                            name="product_interest"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            defaultValue={values?.product_interest || ""}
-                          >
-                            {productInterests.map((option) => (
-                              <MenuItem key={option.id} value={option.code}>
-                                {option.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <InputLabel
-                            sx={{ mb: 1 }}
-                            htmlFor="decision_timeframe"
-                          >
-                            Decision Timeframe
-                          </InputLabel>
-                          <TextField
-                            placeholder="Choose Decision Timeframe"
-                            fullWidth
-                            select
-                            id="decision_timeframe"
-                            name="decision_timeframe"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            defaultValue={values?.decision_timeframe || ""}
-                          >
-                            {decisionTimeframes.map((option) => (
-                              <MenuItem key={option.id} value={option.code}>
-                                {option.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Grid>
                         <Grid item xs={12} sm={12}>
                           <InputLabel sx={{ mb: 1 }}>Object</InputLabel>
                           <OutlinedInput

@@ -1,5 +1,12 @@
 import PropTypes from "prop-types";
-import { useCallback, useEffect, useMemo, Fragment } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  Fragment,
+  useState,
+  useContext,
+} from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 // material-ui
@@ -40,10 +47,11 @@ import {
   TablePagination,
   TableRowSelection,
 } from "../../../components/third-party/ReactTable";
-import { useDispatch, useSelector } from "../../../store";
-import { getPayments } from "../../../store/reducers/payment";
+import { useDispatch } from "../../../store";
 import { openSnackbar } from "../../../store/reducers/snackbar";
-import { del } from "../../../utils/request";
+import { del, get } from "../../../utils/request";
+import PaymentContext from "../../../contexts/PaymentContext";
+
 // assets
 import { PlusOutlined } from "@ant-design/icons";
 
@@ -238,13 +246,12 @@ ReactTable.propTypes = {
 
 const CellActions = ({ row }) => {
   const dispatch = useDispatch();
+  const { setPayments } = useContext(PaymentContext);
   const { values } = row;
-  const { payments } = useSelector((state) => state.payment);
-
-  const deleteSwal = (name) =>
+  const deleteSwal = () =>
     Swal.fire({
       title: "Are you sure?",
-      text: `Are you sure you want to delete ${name}`,
+      text: `Are you sure you want to delete this payment`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -257,7 +264,7 @@ const CellActions = ({ row }) => {
             dispatch(
               openSnackbar({
                 open: true,
-                message: `${values.name} deleted successfully!`,
+                message: ` deleted successfully!`,
                 variant: "alert",
                 alert: {
                   color: "success",
@@ -265,13 +272,21 @@ const CellActions = ({ row }) => {
                 close: false,
               })
             );
-            dispatch(getPayments());
+            get(`/api/payment/list?filters[is_delete][$eq]=0`)
+              .then((response) => {
+                if (response.status === 200) {
+                  return setPayments(response.data);
+                }
+              })
+              .catch((error) => {
+                return error;
+              });
           } else {
             dispatch(
               openSnackbar({
                 open: true,
                 message: response.details
-                  ? `During ${values.name} qualification process. You can not delete this record!`
+                  ? `You can not delete this record!`
                   : response?.message,
                 variant: "alert",
                 alert: {
@@ -306,7 +321,7 @@ const CellActions = ({ row }) => {
         </Link>
       </Tooltip>
       <Tooltip title="Delete">
-        <Link onClick={() => deleteSwal(values.name)}>
+        <Link onClick={() => deleteSwal()}>
           <Delete color="error" />
         </Link>
       </Tooltip>
@@ -320,12 +335,19 @@ CellActions.propTypes = {
 
 const PaymentList = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
-
-  const { payments } = useSelector((state) => state.payment);
+  // const [payments, setPayments] = useState([]);
+  const { payments, setPayments } = useContext(PaymentContext);
 
   useEffect(() => {
-    dispatch(getPayments());
+    get(`/api/payment/list?filters[is_delete][$eq]=0`)
+      .then((response) => {
+        if (response.status === 200) {
+          return setPayments(response.data);
+        }
+      })
+      .catch((error) => {
+        return error;
+      });
   }, []);
 
   const columns = useMemo(
@@ -337,15 +359,15 @@ const PaymentList = () => {
       },
       {
         Header: "User Name",
-        accessor: "user_id",
+        accessor: "user_name",
       },
       {
-        Header: "Battery Name",
-        accessor: "battery_id",
+        Header: "Battery Type",
+        accessor: "battery_type",
       },
       {
         Header: "Station Name",
-        accessor: "station_id",
+        accessor: "station_name",
       },
       {
         Header: "Actions",

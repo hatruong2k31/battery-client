@@ -30,7 +30,8 @@ export const FIREBASE_API = {
 // };
 
 export const SERVER = {
-  localhost: "http://localhost:1337",
+  // host: "http://localhost:1337",
+  host: "http://202.191.56.102:5555",
 };
 
 export const APITOKEN = {
@@ -41,6 +42,7 @@ export const APITOKEN = {
 
 const config = {
   defaultPath: "/dashboard/default",
+  homePath: "/home",
   fontFamily: `'Public Sans', sans-serif`,
   i18n: "en",
   miniDrawer: false,

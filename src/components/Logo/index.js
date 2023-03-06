@@ -14,7 +14,7 @@ const LogoSection = ({ sx, to }) => (
   <ButtonBase
     disableRipple
     component={Link}
-    to={!to ? config.defaultPath : to}
+    to={!to ? config.homePath : to}
     sx={sx}
   >
     <Logo />

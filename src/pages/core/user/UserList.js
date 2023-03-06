@@ -1,5 +1,12 @@
 import PropTypes from "prop-types";
-import { useCallback, useEffect, useMemo, Fragment, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  Fragment,
+  useState,
+  useContext,
+} from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 // material-ui
@@ -45,7 +52,7 @@ import { useDispatch, useSelector } from "../../../store";
 import { getUsers } from "../../../store/reducers/user";
 import { openSnackbar } from "../../../store/reducers/snackbar";
 import { del, get } from "../../../utils/request";
-
+import UserContext from "../../../contexts/UserContext";
 // assets
 import { PlusOutlined } from "@ant-design/icons";
 
@@ -246,12 +253,12 @@ ReactTable.propTypes = {
 
 const CellActions = ({ row }) => {
   const dispatch = useDispatch();
+  const { setUsers } = useContext(UserContext);
   const { values } = row;
-
-  const deleteSwal = (name) =>
+  const deleteSwal = (username) =>
     Swal.fire({
       title: "Are you sure?",
-      text: `Are you sure you want to delete ${name}`,
+      text: `Are you sure you want to delete ${username}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -264,7 +271,7 @@ const CellActions = ({ row }) => {
             dispatch(
               openSnackbar({
                 open: true,
-                message: `${values.name} deleted successfully!`,
+                message: `${values.username} deleted successfully!`,
                 variant: "alert",
                 alert: {
                   color: "success",
@@ -272,12 +279,21 @@ const CellActions = ({ row }) => {
                 close: false,
               })
             );
+            get(`/api/user/list?filters[is_delete][$eq]=0`)
+              .then((response) => {
+                if (response.status === 200) {
+                  return setUsers(response.data);
+                }
+              })
+              .catch((error) => {
+                return error;
+              });
             // dispatch(getUsers());
           } else {
             dispatch(
               openSnackbar({
                 open: true,
-                message: `${values.name} deleted Error! ${response?.message}`,
+                message: `${values.username} deleted Error! ${response?.message}`,
                 variant: "alert",
                 alert: {
                   color: "error",
@@ -311,7 +327,7 @@ const CellActions = ({ row }) => {
         </Link>
       </Tooltip>
       <Tooltip title="Delete">
-        <Link onClick={() => deleteSwal(values.name)}>
+        <Link onClick={() => deleteSwal(values.username)}>
           <Delete color="error" />
         </Link>
       </Tooltip>
@@ -323,14 +339,15 @@ CellActions.propTypes = {
   row: PropTypes.object,
 };
 
-const BBBList = () => {
+const UserList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   // const { users } = useSelector((state) => state.user);
-  const [users, setUsers] = useState([]);
+  const { users, setUsers } = useContext(UserContext);
+  // const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    get(`/api/user/list`)
+    get(`/api/user/list?filters[is_delete][$eq]=0`)
       .then((response) => {
         if (response.status === 200) {
           return setUsers(response.data);
@@ -339,7 +356,7 @@ const BBBList = () => {
       .catch((error) => {
         return error;
       });
-
+    // dispatch(getUsers());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -351,7 +368,7 @@ const BBBList = () => {
         className: "cell-center",
       },
       {
-        Header: "Name",
+        Header: "User Name",
         accessor: "username",
       },
       {
@@ -398,4 +415,4 @@ const BBBList = () => {
     </MainCard>
   );
 };
-export default BBBList;
+export default UserList;

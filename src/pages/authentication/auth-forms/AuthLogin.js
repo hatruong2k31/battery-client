@@ -77,7 +77,7 @@ const AuthLogin = () => {
                 return (
                   setSubmitting(true),
                   setStatus({ success: true }),
-                  navigate("/"),
+                  navigate("/dashboard/default"),
                   dispatch(
                     openSnackbar({
                       open: true,

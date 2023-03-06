@@ -1,7 +1,7 @@
 // third-party
 import { createSlice } from "@reduxjs/toolkit";
 import qs from "qs";
-
+import { get } from "../../utils/request";
 // project imports
 import axios from "../../utils/axios";
 import { dispatch } from "../index";
@@ -48,19 +48,12 @@ export default slice.reducer;
 export function getUsers() {
   return async () => {
     try {
-      const token = JSON.parse(localStorage.getItem("token"));
-      let header = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       const query = qs.stringify(
         {
           pagination: { isPage: false },
           filters: {
             is_delete: {
-              $eq: false,
+              $eq: 0,
             },
           },
         },
@@ -68,8 +61,8 @@ export function getUsers() {
           encodeValuesOnly: true,
         }
       );
-      const response = await axios.get(`/api/user/list?${query}`, header);
-      dispatch(slice.actions.getUsersSuccess(response.data.data));
+      const response = await get(`/api/user/list?${query}`);
+      dispatch(slice.actions.getUsersSuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -90,13 +83,7 @@ export function filterUsers(filter) {
 export function getUser(id) {
   return async () => {
     try {
-      const token = JSON.parse(localStorage.getItem("token"));
-      let header = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.get(`/api/user/${id}`, header);
+      const response = await get(`/api/user/${id}`);
       dispatch(slice.actions.getUsersuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));

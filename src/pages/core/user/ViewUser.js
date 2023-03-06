@@ -59,103 +59,26 @@ const ViewUser = () => {
               <MainCard title="User information">
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>First Name</InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>Email</InputLabel>
                     <OutlinedInput
-                      id="firstname"
-                      type="text"
-                      value={user?.firstname}
-                      name="firstname"
-                      fullWidth
+                      id="email"
+                      type="email"
+                      value={user.email}
+                      name="email"
                       readOnly
+                      fullWidth
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Middle Name</InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>Username</InputLabel>
                     <OutlinedInput
-                      id="middlename"
+                      id="username"
                       type="text"
-                      value={user?.middlename}
-                      name="middlename"
-                      fullWidth
+                      value={user.username}
+                      name="username"
+                      placeholder="Enter your Username"
                       readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>
-                      Last Name
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ color: `error.main` }}
-                      >
-                        *
-                      </Typography>
-                    </InputLabel>
-                    <OutlinedInput
-                      id="lastname"
-                      type="text"
-                      value={user?.lastname}
-                      name="lastname"
                       fullWidth
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>
-                      Identity Card
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ color: `error.main` }}
-                      >
-                        *
-                      </Typography>
-                    </InputLabel>
-                    <OutlinedInput
-                      id="identity_card"
-                      type="text"
-                      value={user?.identity_card}
-                      name="identity_card"
-                      fullWidth
-                      readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>BirthDate</InputLabel>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <Stack>
-                        <DatePicker
-                          readOnly
-                          id="birthdate"
-                          value={user?.birthdate}
-                          name="birthdate"
-                          closeOnSelect
-                          inputFormat="DD/MM/YYYY"
-                          renderInput={(params) => <TextField {...params} />}
-                          mask="__/__/____"
-                          fullWidth
-                        />
-                      </Stack>
-                    </LocalizationProvider>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>
-                      Mobile
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ color: `error.main` }}
-                      >
-                        *
-                      </Typography>
-                    </InputLabel>
-                    <OutlinedInput
-                      id="mobile_phone"
-                      type="text"
-                      value={user?.mobile_phone}
-                      name="mobile_phone"
-                      fullWidth
-                      readOnly
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -163,114 +86,60 @@ const ViewUser = () => {
                     <OutlinedInput
                       id="phone"
                       type="text"
-                      value={user?.phone}
+                      value={user.phone}
                       name="phone"
-                      fullWidth
+                      placeholder="Enter your Phone"
                       readOnly
+                      fullWidth
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Home Phone</InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>Identity Card</InputLabel>
                     <OutlinedInput
-                      id="homephone"
+                      id="identity_card"
                       type="text"
-                      value={user?.homephone}
-                      name="homephone"
-                      fullWidth
+                      value={user.identity_card}
+                      name="identity_card"
+                      placeholder="Enter your Identity"
                       readOnly
+                      fullWidth
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>
-                      Email
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ color: `error.main` }}
-                      >
-                        *
-                      </Typography>
-                    </InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>RFID</InputLabel>
                     <OutlinedInput
-                      id="email"
+                      id="card_id"
                       type="text"
-                      value={user?.email}
-                      name="email"
-                      fullWidth
+                      value={user.card_id}
+                      name="card_id"
+                      placeholder="Enter RFID"
                       readOnly
+                      fullWidth
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Title</InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>Provicer</InputLabel>
                     <OutlinedInput
-                      id="title"
+                      id="provider"
                       type="text"
-                      value={user?.title}
-                      name="title"
-                      fullWidth
+                      value={user.provider}
+                      name="provider"
+                      placeholder="Enter Provicer"
                       readOnly
+                      fullWidth
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1 }}>Department</InputLabel>
+                    <InputLabel sx={{ mb: 1 }}>Balance</InputLabel>
                     <OutlinedInput
-                      id="department"
-                      type="text"
-                      value={user?.department}
-                      name="department"
-                      fullWidth
+                      id="balance"
+                      type="number"
+                      value={user.balance}
+                      name="balance"
+                      placeholder="Enter Balance"
                       readOnly
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={12}>
-                    <InputLabel sx={{ mb: 1 }}>
-                      Account Name
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ color: `error.main` }}
-                      >
-                        *
-                      </Typography>
-                    </InputLabel>
-                  </Grid>
-                  <Grid item xs={12} sm={12}>
-                    <InputLabel sx={{ mb: 1 }}>Description</InputLabel>
-                    <OutlinedInput
-                      id="description"
-                      type="text"
-                      value={user?.description}
-                      name="description"
-                      rows={2}
-                      multiline
                       fullWidth
-                      readOnly
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={
-                        user?.donotcall ? (
-                          <Checkbox defaultChecked value={true} />
-                        ) : (
-                          <Checkbox value={true} />
-                        )
-                      }
-                      onClick="return false;"
-                      label="Do not call"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mt: 1 }}>
-                      User Owner :
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ fontWeight: 1000, fontSize: 15 }}
-                      >
-                        {" " + user?.owner_name}
-                      </Typography>
-                    </InputLabel>
                   </Grid>
                 </Grid>
               </MainCard>
@@ -283,7 +152,7 @@ const ViewUser = () => {
             <Grid item xs={12}>
               <Stack
                 direction="row"
-                justifyContent="right"
+                justifyContent="center"
                 alignItems="center"
                 spacing={2}
                 sx={{ mt: 2 }}

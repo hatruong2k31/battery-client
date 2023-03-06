@@ -23,6 +23,7 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 import MainCard from "../../../components/MainCard";
 import { useDispatch, useSelector } from "../../../store";
+import AnimateButton from "../../../components/@extended/AnimateButton";
 import { post } from "../../../utils/request";
 import {
   selectGender,
@@ -45,149 +46,56 @@ function CreateUser() {
   const [districts, setDistricts] = useState([]);
   // const [wards, setWards] = useState([]);
   const countries = [{ id: "01", name: "Việt Nam" }];
-  const [accountData, setAccountData] = useState([]);
-  const [authState, authDispatch] = useAuth();
-  const { user } = authState;
-  useEffect(() => {
-    selectGender().then((response) => {
-      return setGenders(response.data);
-    });
-  }, [dispatch]);
-
-  useEffect(() => {
-    selectProvince().then((response) => {
-      return setProvinces(response.data);
-    });
-  }, []);
 
   const handleCancel = () => {
-    history(`/contact/list`);
+    history(`/user/list`);
   };
 
   return (
     <>
       <Formik
         initialValues={{
-          lastname: "",
-          birthdate: "",
-          gender: "",
-          identity_card: "",
+          username: "",
+          identity_card: null,
           email: "",
-          account_id: "",
-          mobile_phone: "",
-          phone: "",
-          homephone: "",
-          country: "01",
-          district: "",
-          province: "",
+          phone: null,
+          card_id: null,
+          balance: 0,
+          password: null,
+          provider: "local",
         }}
         enableReinitialize
         validationSchema={Yup.object().shape({
-          firstname: Yup.string()
-            .matches(
-              "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
-              "Please enter a valid First Name"
-            )
-            .max(70, "No more than 70 characters")
-            .nullable(),
-          middlename: Yup.string()
-            .matches(
-              "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
-              "Please enter a valid First Name"
-            )
-            .max(70, "No more than 70 characters")
-            .nullable(),
-          lastname: Yup.string()
-            .matches(
-              "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
-              "Please enter a valid First Name"
-            )
-            .max(70, "No more than 70 characters")
-            .required("Last Name must be completed"),
-          description: Yup.string()
-            .max(255, "No more than 255 characters")
-            .nullable(),
-          birthdate: Yup.date()
-            .max(moment(Date.now()), "No more than today")
-            .nullable(),
-          account_id: Yup.string()
-            .required("Account Name must be completed")
-            .nullable("Account Name must be completed"),
-          gender: Yup.string().nullable(),
-          title: Yup.string()
-            .max(255, "No more than 255 characters")
-            .nullable(),
-          department: Yup.string()
-            .max(255, "No more than 255 characters")
-            .nullable(),
-          identity_card: Yup.string()
-            .matches("^[0-9]*$", "Please enter a valid Identity Card")
-            .max(20, "No more than 20 characters")
-            .required("Identity Card must be completed"),
           email: Yup.string()
-            .email("Please enter a valid Email")
-            .max(255, "No more than 255 characters")
-            .required("Email must be completed"),
+            .email("Must be a valid email")
+            .max(255)
+            .required("Email is required"),
+          username: Yup.string()
+            .min(1)
+            .max(255)
+            .required("Username is required"),
           phone: Yup.string()
             .matches("^0[0-9]{9,10}$", "Please enter a valid Phone")
             .min(10, "Please enter a valid Phone")
             .max(11, "Please enter a valid Phone")
             .nullable(),
-          homephone: Yup.string()
-            .matches("^0[0-9]{9,10}$", "Please enter a valid Home Phone")
-            .min(10, "Please enter a valid Phone")
-            .max(11, "Please enter a valid Phone")
+          identity_card: Yup.string()
+            .matches("^[0-9]*$", "Please enter a valid Identity Card")
+            .max(12, "No more than 20 characters")
             .nullable(),
-          mobile_phone: Yup.string()
-            .matches("^0[0-9]{9,10}$", "Please enter a valid Mobile Phone")
-            .min(10, "Please enter a valid Phone")
-            .max(11, "Please enter a valid Phone")
-            .required("Mobile Phone must be completed"),
-          street: Yup.string()
-            .max(255, "No more than 255 characters")
-            .nullable(),
-          district: Yup.string().nullable(),
-          country: Yup.string().nullable(),
-          province: Yup.string().nullable(),
+          balance: Yup.number().min(0).nullable(),
+          password: Yup.string().required("Password must be required"),
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
-            if (values.middlename) {
-              values.middlename = values.middlename.trim();
-            }
-            if (values.firstname) {
-              values.firstname = values.firstname.trim();
-            }
-            values.lastname = values.lastname.trim();
-            values.name =
-              values.firstname && values.middlename // nếu có f và m
-                ? values.lastname.concat(
-                    " ",
-                    values.middlename,
-                    " ",
-                    values.firstname
-                  )
-                : values.firstname && !values.middlename //nếu có f và không có m
-                ? values.lastname.concat(" ", values.firstname)
-                : !values.firstname && values.middlename //nếu có m và không có f
-                ? values.lastname.concat(" ", values.middlename)
-                : values.lastname; //chỉ có l
-            if (values.donotcall === false || null) {
-              values.donotcall = false;
-            }
-            if (values.birthdate) {
-              values.birthdate = new Date(values.birthdate);
-            } else {
-              values.birthdate = null;
-            }
-            // values.address = values.street.concat(", ",values.city,", ", values.province, ", ", values.country)
-            await post(`api/contact/`, values).then(function (response) {
+            values.username = values.username.trim();
+            await post(`api/user/`, values).then(function (response) {
               if (response.status === 200) {
                 return (
                   dispatch(
                     openSnackbar({
                       open: true,
-                      message: `Contact ${values.name} was created`,
+                      message: `User ${values.usernam} was created`,
                       variant: "alert",
                       alert: {
                         color: "success",
@@ -197,8 +105,9 @@ function CreateUser() {
                   ),
                   setSubmitting(true),
                   setStatus({ success: true }),
-                  history(`/contact/list`)
-                  // history(`/contact/view/${response.data.data[0].id}`)
+                  // history(`/user/list`),
+                  console.log(response.data),
+                  history(`/user/view/${response.data.data.id}`)
                 );
               } else {
                 return (
@@ -248,97 +157,241 @@ function CreateUser() {
           setFieldValue,
         }) => (
           <form noValidate onSubmit={handleSubmit}>
-            {
-              <MainCard title="Add new User">
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1, opacity: 1 }}>Email</InputLabel>
-                    <TextField
-                      sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
-                      placeholder="Enter email"
-                      fullWidth
-                      onChange={handleChange}
-                      name="auth.email"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1, opacity: 1 }}>Username</InputLabel>
-                    <TextField
-                      sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
-                      placeholder="Enter name"
-                      fullWidth
-                      onChange={handleChange}
-                      name="auth.username"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1, opacity: 1 }}>Password</InputLabel>
-                    <TextField
-                      type="password"
-                      sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
-                      placeholder="Enter password"
-                      fullWidth
-                      onChange={handleChange}
-                      name="auth.password"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1, opacity: 1 }}>Name</InputLabel>
-                    <TextField
-                      sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
-                      placeholder="Enter product name"
-                      fullWidth
-                      onChange={handleChange}
-                      name="org.name"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1, opacity: 1 }}>Phone</InputLabel>
-                    <TextField
-                      sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
-                      placeholder="Enter phone"
-                      fullWidth
-                      onChange={handleChange}
-                      name="org.phone"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <InputLabel sx={{ mb: 1, opacity: 1 }}>Balance</InputLabel>
-                    <TextField
-                      type="number"
-                      sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
-                      placeholder="Enter address"
-                      fullWidth
-                      onChange={handleChange}
-                      name="org.address"
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      justifyContent="right"
-                      alignItems="center"
+            <MainCard title="Create User">
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>
+                    Email
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      sx={{ color: `error.main` }}
                     >
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        onClick={handleCancel}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        disabled={isSubmitting}
-                        variant="contained"
-                        type="submit"
-                      >
-                        Add
-                      </Button>
-                    </Stack>
-                  </Grid>
+                      *
+                    </Typography>
+                  </InputLabel>
+                  <OutlinedInput
+                    id="email"
+                    type="email"
+                    value={values.email}
+                    name="email"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    readOnly
+                    fullWidth
+                    error={Boolean(touched.email && errors.email)}
+                  />
+                  {touched.email && errors.email && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-email"
+                    >
+                      {errors.email}
+                    </FormHelperText>
+                  )}
                 </Grid>
-              </MainCard>
-            }
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>
+                    Username
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      sx={{ color: `error.main` }}
+                    >
+                      *
+                    </Typography>
+                  </InputLabel>
+                  <OutlinedInput
+                    id="username"
+                    type="text"
+                    value={values.username}
+                    name="username"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Username"
+                    fullWidth
+                    error={Boolean(touched.username && errors.username)}
+                  />
+                  {touched.username && errors.username && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-username"
+                    >
+                      {errors.username}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Phone</InputLabel>
+                  <OutlinedInput
+                    id="phone"
+                    type="text"
+                    value={values.phone}
+                    name="phone"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your phone"
+                    fullWidth
+                    error={Boolean(touched.phone && errors.phone)}
+                  />
+                  {touched.phone && errors.phone && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-phone"
+                    >
+                      {errors.phone}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Identity Card</InputLabel>
+                  <OutlinedInput
+                    id="identity_card"
+                    type="text"
+                    value={values.identity_card}
+                    name="identity_card"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Identity"
+                    fullWidth
+                    error={Boolean(
+                      touched.identity_card && errors.identity_card
+                    )}
+                  />
+                  {touched.identity_card && errors.identity_card && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-identity_card"
+                    >
+                      {errors.identity_card}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Password</InputLabel>
+                  <TextField
+                    type="password"
+                    sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
+                    placeholder="Enter password"
+                    fullWidth
+                    variant="outlined"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    name="password"
+                    id="password"
+                    error={Boolean(touched.password && errors.password)}
+                  />
+                  {touched.password && errors.password && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-password"
+                    >
+                      {errors.password}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>RFID</InputLabel>
+                  <OutlinedInput
+                    id="card_id"
+                    type="text"
+                    value={values.card_id}
+                    name="card_id"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Identity"
+                    fullWidth
+                    error={Boolean(touched.card_id && errors.card_id)}
+                  />
+                  {touched.card_id && errors.card_id && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-card_id"
+                    >
+                      {errors.card_id}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Provicer</InputLabel>
+                  <OutlinedInput
+                    id="provider"
+                    type="text"
+                    value={values.provider}
+                    name="provider"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Identity"
+                    fullWidth
+                    error={Boolean(touched.provider && errors.provider)}
+                  />
+                  {touched.provider && errors.provider && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-provider"
+                    >
+                      {errors.provider}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Balance</InputLabel>
+                  <OutlinedInput
+                    id="balance"
+                    type="number"
+                    value={values.balance}
+                    name="balance"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your balance"
+                    fullWidth
+                    error={Boolean(touched.balance && errors.balance)}
+                  />
+                  {touched.balance && errors.balance && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-balance"
+                    >
+                      {errors.balance}
+                    </FormHelperText>
+                  )}
+                </Grid>
+              </Grid>
+            </MainCard>
+            {errors.submit && (
+              <Grid item xs={12}>
+                <FormHelperText error>{errors.submit}</FormHelperText>
+              </Grid>
+            )}
+            <Grid item xs={12}>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ mt: 6 }}
+              >
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
+                <AnimateButton>
+                  <Button
+                    sx={{ textTransform: "none" }}
+                    disableElevation
+                    fullWidth
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                  >
+                    Create
+                  </Button>
+                </AnimateButton>
+              </Stack>
+            </Grid>
           </form>
         )}
       </Formik>

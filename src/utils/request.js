@@ -2,7 +2,7 @@ import axios from "axios";
 import { APITOKEN, SERVER } from "../config";
 
 const instance = axios.create({
-  baseURL: SERVER.localhost,
+  baseURL: SERVER.host,
 });
 
 export const postLogin = async (data) => {

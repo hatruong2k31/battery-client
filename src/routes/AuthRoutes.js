@@ -7,6 +7,7 @@ import Register from "../pages/authentication/Register";
 import { AuthRoutes } from "./PrivateRouterWrapper";
 // render - login
 const Login = Loadable(lazy(() => import("../pages/authentication/Login")));
+const Home = Loadable(lazy(() => import("../pages/core/home/index")));
 const GoogleAuthCallback = Loadable(
   lazy(() => import("../pages/authentication/auth-forms/GoogleAuthCallback"))
 );
@@ -30,6 +31,10 @@ const LoginRoutes = {
           <Login />
         </AuthRoutes>
       ),
+    },
+    {
+      path: "/home",
+      element: <Home />,
     },
     {
       path: "/register",
