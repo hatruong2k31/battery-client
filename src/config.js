@@ -30,8 +30,8 @@ export const FIREBASE_API = {
 // };
 
 export const SERVER = {
-  // host: "http://localhost:1337",
-  host: "http://202.191.56.102:5555",
+  host: process.env.REACT_APP_SERVER_HOST,
+  // host: "http://202.191.56.102:5555",
 };
 
 export const APITOKEN = {

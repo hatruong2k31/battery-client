@@ -26,7 +26,6 @@ export const UserProvider = ({ children }) => {
     get(`/api/user/list?${query}`)
       .then((response) => {
         if (response.status === 200) {
-          console.log(response);
           return setUsers(response.data);
         }
       })
