@@ -7,6 +7,7 @@ import user from "./user";
 import snackbar from "./snackbar";
 import sys_config from "./sysConfig";
 import payment from "./payment";
+import role from "./role";
 // ==============================|| COMBINE REDUCERS ||============================== //
 
 const reducers = combineReducers({
@@ -15,6 +16,7 @@ const reducers = combineReducers({
   payment,
   sys_config,
   snackbar,
+  role,
 });
 
 export default reducers;

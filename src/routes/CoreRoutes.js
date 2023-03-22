@@ -29,10 +29,19 @@ const ViewPayment = Loadable(
   lazy(() => import("../pages/core/payment/ViewPayment"))
 );
 
-//Station
-// const StationList = Loadable(lazy(() => import("../pages/core/station/List")));
-// const CreateStation = Loadable(lazy(() => import("../pages/core/station/Add")));
-// const EditStation = Loadable(lazy(() => import("../pages/core/station/Edit")));
+// Station
+const StationList = Loadable(
+  lazy(() => import("../pages/core/station/StationList"))
+);
+const CreateStation = Loadable(
+  lazy(() => import("../pages/core/station/CreateStation"))
+);
+const EditStation = Loadable(
+  lazy(() => import("../pages/core/station/EditStation"))
+);
+const ViewStation = Loadable(
+  lazy(() => import("../pages/core/station/ViewStation"))
+);
 
 //Battery
 // const BatteryList = Loadable(lazy(() => import("../pages/core/battery/List")));
@@ -118,23 +127,27 @@ const CoreRoutes = {
     //     },
     //   ],
     // },
-    // {
-    //   path: "/station",
-    //   children: [
-    //     {
-    //       path: "list",
-    //       element: <StationList />,
-    //     },
-    //     {
-    //       path: "create",
-    //       element: <CreateStation />,
-    //     },
-    //     {
-    //       path: "edit/:id",
-    //       element: <EditStation />,
-    //     },
-    //   ],
-    // },
+    {
+      path: "/station",
+      children: [
+        {
+          path: "list",
+          element: <StationList />,
+        },
+        {
+          path: "create",
+          element: <CreateStation />,
+        },
+        {
+          path: "edit/:id",
+          element: <EditStation />,
+        },
+        {
+          path: "view/:id",
+          element: <ViewStation />,
+        },
+      ],
+    },
   ],
 };
 

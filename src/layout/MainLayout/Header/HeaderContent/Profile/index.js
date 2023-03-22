@@ -120,7 +120,7 @@ const Profile = () => {
             src={avatar1}
             sx={{ width: 32, height: 32 }}
           />
-          <Typography variant="subtitle1">{user.username}</Typography>
+          <Typography variant="subtitle1">{user?.username}</Typography>
         </Stack>
       </ButtonBase>
       <Popper
@@ -176,7 +176,7 @@ const Profile = () => {
                             />
                             <Stack>
                               <Typography variant="h6">
-                                {user.username}
+                                {user?.username}
                               </Typography>
                               <Typography variant="body2" color="textSecondary">
                                 UI/UX Designer

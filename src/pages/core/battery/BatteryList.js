@@ -38,7 +38,7 @@ import {
 import Swal from "sweetalert2";
 
 // project import
-import ViewUser from "./ViewUser";
+import ViewUser from "./ViewBattery";
 import MainCard from "../../../components/MainCard";
 import ScrollX from "../../../components/ScrollX";
 import { renderFilterTypes, GlobalFilter } from "../../../utils/react-table";
@@ -384,8 +384,8 @@ const UserList = () => {
         accessor: "balance",
       },
       {
-        Header: "Role",
-        accessor: "role",
+        Header: "Provider",
+        accessor: "provider",
       },
       {
         Header: "Actions",

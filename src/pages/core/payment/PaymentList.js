@@ -46,6 +46,7 @@ import {
   HeaderSort,
   TablePagination,
   TableRowSelection,
+  SortingSelect,
 } from "../../../components/third-party/ReactTable";
 import { useDispatch } from "../../../store";
 import { openSnackbar } from "../../../store/reducers/snackbar";
@@ -121,7 +122,7 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
   const history = useNavigate();
 
   const handleAddPayment = () => {
-    history(`/payment/add-new-payment`);
+    history(`/payment/create`);
   };
 
   return (
@@ -140,13 +141,18 @@ function ReactTable({ columns, data, getHeaderProps, renderRowSubComponent }) {
             setGlobalFilter={setGlobalFilter}
             size="small"
           />
+          <SortingSelect
+            sortBy={sortBy.id}
+            setSortBy={setSortBy}
+            allColumns={allColumns}
+          />
           <Stack direction="row" alignItems="center" spacing={1}>
             <Button
               variant="contained"
               startIcon={<PlusOutlined />}
               onClick={handleAddPayment}
             >
-              Add Payment
+              New Payment
             </Button>
           </Stack>
         </Stack>
@@ -243,6 +249,11 @@ ReactTable.propTypes = {
 };
 
 // ==============================|| PRODUCT LIST - MAIN ||============================== //
+const created_at = ({ row }) => {
+  const { values } = row;
+
+  return <span> {(values?.created_at?.slice(0,19)).replace("T"," ")} </span>;
+};
 
 const CellActions = ({ row }) => {
   const dispatch = useDispatch();
@@ -332,6 +343,9 @@ const CellActions = ({ row }) => {
 CellActions.propTypes = {
   row: PropTypes.object,
 };
+created_at.propTypes = {
+  row: PropTypes.object,
+};
 
 const PaymentList = () => {
   const theme = useTheme();
@@ -353,7 +367,7 @@ const PaymentList = () => {
   const columns = useMemo(
     () => [
       {
-        Header: "#",
+        Header: "ID",
         accessor: "id",
         className: "cell-center",
       },
@@ -363,11 +377,17 @@ const PaymentList = () => {
       },
       {
         Header: "Battery Type",
-        accessor: "battery_type",
+        accessor: "battery_out_type",
       },
       {
         Header: "Station Name",
         accessor: "station_name",
+      },
+      {
+        Header: "Created At",
+        accessor: "created_at",
+        className: "cell-center",
+        Cell: created_at,
       },
       {
         Header: "Actions",

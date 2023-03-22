@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
 // material-ui
 import {
   Grid,
@@ -8,13 +9,12 @@ import {
   OutlinedInput,
   InputLabel,
   TextField,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
   Typography,
   FormHelperText,
-  MenuItem,
-  Select,
-  IconButton,
 } from "@mui/material";
-import ClearIcon from "@mui/icons-material/Clear";
 // import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 // import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
@@ -22,13 +22,18 @@ import ClearIcon from "@mui/icons-material/Clear";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import MainCard from "../../../components/MainCard";
+import { useDispatch, useSelector } from "../../../store";
 import AnimateButton from "../../../components/@extended/AnimateButton";
-import { get, post } from "../../../utils/request";
+import { post } from "../../../utils/request";
+import {
+  selectGender,
+  selectProvince,
+  selectDistrict,
+  // selectWard,
+} from "../../../utils/selectRequest";
 import { openSnackbar } from "../../../store/reducers/snackbar";
 import useAuth from "../../../hooks/useAuth";
-import { useDispatch, useSelector } from "../../../store";
-import { getRoles } from "../../../store/reducers/role";
-import { roleSelect } from "../../../utils/selectRequest";
+
 // assets
 
 // ==============================|| ADD NEW PRODUCT - MAIN ||============================== //
@@ -36,15 +41,11 @@ import { roleSelect } from "../../../utils/selectRequest";
 function CreateUser() {
   const history = useNavigate();
   const dispatch = useDispatch();
-  // const [roles, setRoles] = useState([]);
-  const { roles } = useSelector((state) => state.role);
-
-  useEffect(() => {
-    dispatch(getRoles());
-    // roleSelect().then((response) => {
-    //   return setRoles(response.data);
-    // });
-  }, [dispatch]);
+  const [genders, setGenders] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  // const [wards, setWards] = useState([]);
+  const countries = [{ id: "01", name: "Việt Nam" }];
 
   const handleCancel = () => {
     history(`/user/list`);
@@ -54,14 +55,13 @@ function CreateUser() {
     <>
       <Formik
         initialValues={{
-          role_id: "",
           username: "",
-          identity_card: "",
+          identity_card: null,
           email: "",
-          phone: "",
-          card_id: "",
+          phone: null,
+          card_id: null,
           balance: 0,
-          password: "",
+          password: null,
           provider: "local",
         }}
         enableReinitialize
@@ -71,11 +71,8 @@ function CreateUser() {
             .max(255)
             .required("Email is required"),
           username: Yup.string()
-            .matches(
-              "^((?![!@#$%^&*~`\\\\(\\\\)_+-=\\[\\]{};':\"\\|,.<>/?]).)*$[0-9]?",
-              "Please enter a valid Username!"
-            )
-            .max(70, "No more than 70 characters")
+            .min(1)
+            .max(255)
             .required("Username is required"),
           phone: Yup.string()
             .matches("^0[0-9]{9,10}$", "Please enter a valid Phone")
@@ -84,18 +81,10 @@ function CreateUser() {
             .nullable(),
           identity_card: Yup.string()
             .matches("^[0-9]*$", "Please enter a valid Identity Card")
-            .min(9, "Please enter a valid Identtity Card")
-            .max(12, "No more than 12 characters")
+            .max(12, "No more than 20 characters")
             .nullable(),
-          balance: Yup.number()
-            .min(0, "Must not be less than 0!")
-            .max(100000000, "No more than 1 billion VND!")
-            .nullable(),
-          password: Yup.string().required("Password is required"),
-          role_id: Yup.string()
-            .required("Role is required")
-            .nullable("Role is required"),
-          card_id: Yup.string().required("RFID is required"),
+          balance: Yup.number().min(0).nullable(),
+          password: Yup.string().required("Password must be required"),
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
@@ -106,7 +95,7 @@ function CreateUser() {
                   dispatch(
                     openSnackbar({
                       open: true,
-                      message: `User ${values.username} was created`,
+                      message: `User ${values.usernam} was created`,
                       variant: "alert",
                       alert: {
                         color: "success",
@@ -116,9 +105,9 @@ function CreateUser() {
                   ),
                   setSubmitting(true),
                   setStatus({ success: true }),
-                  history(`/user/list`),
-                  console.log(response.data)
-                  // history(`/user/view/${response.data.data.id}`)
+                  // history(`/user/list`),
+                  console.log(response.data),
+                  history(`/user/view/${response.data.data.id}`)
                 );
               } else {
                 return (
@@ -170,86 +159,9 @@ function CreateUser() {
           <form noValidate onSubmit={handleSubmit}>
             <MainCard title="Create User">
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={9}>
-                  <InputLabel sx={{ mb: 1 }}>
-                    Role{" "}
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{ color: `error.main` }}
-                    >
-                      *
-                    </Typography>
-                  </InputLabel>
-                  <Select
-                    sx={{
-                      "& .MuiSelect-iconOutlined": {
-                        display: values.role_id ? "none" : "",
-                      },
-                    }}
-                    name="role_id"
-                    id="role_id"
-                    placeholder="Select Role"
-                    fullWidth
-                    value={values?.role_id || ""}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    endAdornment={
-                      <IconButton
-                        sx={{
-                          visibility: values.role_id ? "visible" : "hidden",
-                        }}
-                        onClick={() => {
-                          setFieldValue("role_id", null);
-                        }}
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    }
-                    error={Boolean(touched.role_id && errors.role_id)}
-                  >
-                    {roles.map((option) => (
-                      <MenuItem key={option.id} value={option.id}>
-                        {option.name}
-                      </MenuItem>
-                    ))}
-                    <MenuItem key="" value={""}></MenuItem>
-                  </Select>
-                  {touched.role_id && errors.role_id && (
-                    <FormHelperText
-                      error
-                      id="standard-weight-helper-text-role_id"
-                    >
-                      {errors.role_id}
-                    </FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <InputLabel sx={{ mb: 1 }}>Provider</InputLabel>
-                  <OutlinedInput
-                    sx={{ fontWeight: 750, fontSize: 15 }}
-                    id="provider"
-                    type="text"
-                    value={values.provider}
-                    name="provider"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    fullWidth
-                    readOnly
-                    error={Boolean(touched.provider && errors.provider)}
-                  />
-                  {touched.provider && errors.provider && (
-                    <FormHelperText
-                      error
-                      id="standard-weight-helper-text-provider"
-                    >
-                      {errors.provider}
-                    </FormHelperText>
-                  )}
-                </Grid>
                 <Grid item xs={12} sm={6}>
                   <InputLabel sx={{ mb: 1 }}>
-                    Email{" "}
+                    Email
                     <Typography
                       component="span"
                       variant="caption"
@@ -261,9 +173,11 @@ function CreateUser() {
                   <OutlinedInput
                     id="email"
                     type="email"
+                    value={values.email}
                     name="email"
                     onBlur={handleBlur}
                     onChange={handleChange}
+                    readOnly
                     fullWidth
                     error={Boolean(touched.email && errors.email)}
                   />
@@ -278,7 +192,7 @@ function CreateUser() {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <InputLabel sx={{ mb: 1 }}>
-                    Password{" "}
+                    Username
                     <Typography
                       component="span"
                       variant="caption"
@@ -287,6 +201,74 @@ function CreateUser() {
                       *
                     </Typography>
                   </InputLabel>
+                  <OutlinedInput
+                    id="username"
+                    type="text"
+                    value={values.username}
+                    name="username"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Username"
+                    fullWidth
+                    error={Boolean(touched.username && errors.username)}
+                  />
+                  {touched.username && errors.username && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-username"
+                    >
+                      {errors.username}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Phone</InputLabel>
+                  <OutlinedInput
+                    id="phone"
+                    type="text"
+                    value={values.phone}
+                    name="phone"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your phone"
+                    fullWidth
+                    error={Boolean(touched.phone && errors.phone)}
+                  />
+                  {touched.phone && errors.phone && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-phone"
+                    >
+                      {errors.phone}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Identity Card</InputLabel>
+                  <OutlinedInput
+                    id="identity_card"
+                    type="text"
+                    value={values.identity_card}
+                    name="identity_card"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Identity"
+                    fullWidth
+                    error={Boolean(
+                      touched.identity_card && errors.identity_card
+                    )}
+                  />
+                  {touched.identity_card && errors.identity_card && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-identity_card"
+                    >
+                      {errors.identity_card}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Password</InputLabel>
                   <TextField
                     type="password"
                     sx={{ "& .MuiOutlinedInput-input": { opacity: 1 } }}
@@ -309,97 +291,15 @@ function CreateUser() {
                   )}
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <InputLabel sx={{ mb: 1 }}>
-                    Username{" "}
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{ color: `error.main` }}
-                    >
-                      *
-                    </Typography>
-                  </InputLabel>
-                  <OutlinedInput
-                    id="username"
-                    type="text"
-                    name="username"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="Enter Username"
-                    fullWidth
-                    error={Boolean(touched.username && errors.username)}
-                  />
-                  {touched.username && errors.username && (
-                    <FormHelperText
-                      error
-                      id="standard-weight-helper-text-username"
-                    >
-                      {errors.username}
-                    </FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <InputLabel sx={{ mb: 1 }}>Phone</InputLabel>
-                  <OutlinedInput
-                    id="phone"
-                    type="text"
-                    name="phone"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="Enter phone"
-                    fullWidth
-                    error={Boolean(touched.phone && errors.phone)}
-                  />
-                  {touched.phone && errors.phone && (
-                    <FormHelperText
-                      error
-                      id="standard-weight-helper-text-phone"
-                    >
-                      {errors.phone}
-                    </FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <InputLabel sx={{ mb: 1 }}>Identity Card</InputLabel>
-                  <OutlinedInput
-                    id="identity_card"
-                    type="text"
-                    name="identity_card"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    placeholder="Enter Identity"
-                    fullWidth
-                    error={Boolean(
-                      touched.identity_card && errors.identity_card
-                    )}
-                  />
-                  {touched.identity_card && errors.identity_card && (
-                    <FormHelperText
-                      error
-                      id="standard-weight-helper-text-identity_card"
-                    >
-                      {errors.identity_card}
-                    </FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <InputLabel sx={{ mb: 1 }}>
-                    RFID{" "}
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{ color: `error.main` }}
-                    >
-                      *
-                    </Typography>
-                  </InputLabel>
+                  <InputLabel sx={{ mb: 1 }}>RFID</InputLabel>
                   <OutlinedInput
                     id="card_id"
                     type="text"
+                    value={values.card_id}
                     name="card_id"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Enter RFID"
+                    placeholder="Enter your Identity"
                     fullWidth
                     error={Boolean(touched.card_id && errors.card_id)}
                   />
@@ -412,15 +312,38 @@ function CreateUser() {
                     </FormHelperText>
                   )}
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid item xs={12} sm={6}>
+                  <InputLabel sx={{ mb: 1 }}>Provicer</InputLabel>
+                  <OutlinedInput
+                    id="provider"
+                    type="text"
+                    value={values.provider}
+                    name="provider"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    placeholder="Enter your Identity"
+                    fullWidth
+                    error={Boolean(touched.provider && errors.provider)}
+                  />
+                  {touched.provider && errors.provider && (
+                    <FormHelperText
+                      error
+                      id="standard-weight-helper-text-provider"
+                    >
+                      {errors.provider}
+                    </FormHelperText>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <InputLabel sx={{ mb: 1 }}>Balance</InputLabel>
                   <OutlinedInput
                     id="balance"
                     type="number"
+                    value={values.balance}
                     name="balance"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Enter balance"
+                    placeholder="Enter your balance"
                     fullWidth
                     error={Boolean(touched.balance && errors.balance)}
                   />

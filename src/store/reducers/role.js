@@ -1,6 +1,6 @@
 // third-party
 import { createSlice } from "@reduxjs/toolkit";
-
+import { get } from "../../utils/request";
 // project imports
 import axios from "../../utils/axios";
 import { dispatch } from "../index";
@@ -47,14 +47,8 @@ export default slice.reducer;
 export function getRoles() {
   return async () => {
     try {
-      const token = JSON.parse(localStorage.getItem("token"));
-      let header = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.get("api/role/list", header);
-      dispatch(slice.actions.getRolesSuccess(response.data.data.data));
+      const response = await get("/api/users-permissions/roles");
+      dispatch(slice.actions.getRolesSuccess(response.data.roles));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -64,7 +58,9 @@ export function getRoles() {
 export function filterRoles(filter) {
   return async () => {
     try {
-      const response = await axios.post("/api/role/filter", { filter });
+      const response = await axios.post("/api/users-permissions/roles", {
+        filter,
+      });
       dispatch(slice.actions.filterRolesSuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
@@ -81,7 +77,10 @@ export function getRole(id) {
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(`/api/role/detail/${id}`, header);
+      const response = await axios.get(
+        `/api/users-permissions/roles/${id}`,
+        header
+      );
       dispatch(slice.actions.getRolesuccess(response.data.data[0]));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
